@@ -1,0 +1,65 @@
+name: Windows Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows-release:
+    name: Verify, build, and publish Windows release
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Require tag and package version to match
+        shell: pwsh
+        run: npm run release:check-version -- "$env:GITHUB_REF_NAME"
+
+      - name: Run Windows installer regression test
+        run: npm run test:portable
+
+      - name: Build Windows release files
+        run: npm run release:windows
+
+      - name: Verify Windows release files
+        run: npm run release:verify
+
+      - name: Create or update GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $files = Get-ChildItem 'output/main-workbench-distributions' -File |
+            Where-Object { $_.Name -match '(-setup\.exe|\.zip|-manifest\.json)$' } |
+            ForEach-Object { $_.FullName }
+          if ($files.Count -lt 3) { throw 'Windows 发布文件不完整。' }
+
+          gh release view "$env:GITHUB_REF_NAME" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload "$env:GITHUB_REF_NAME" $files --clobber
+          } else {
+            gh release create "$env:GITHUB_REF_NAME" $files `
+              --verify-tag `
+              --title "零代码工作能力蒸馏器 $env:GITHUB_REF_NAME" `
+              --generate-notes
+          }

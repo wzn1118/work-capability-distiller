@@ -1,7 +1,7 @@
 {
   "name": "reachdesk-kol-workbench",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "engines": {
     "node": ">=22 <25",
@@ -35,6 +35,7 @@
     "session:portable": "node session-forensics/build-portable-workbench.mjs",
     "release:windows": "node session-forensics/build-portable-workbench.mjs",
     "release:verify": "node session-forensics/verify-portable-release.mjs",
+    "release:check-version": "node session-forensics/check-release-version.mjs",
     "test:session-forensics": "node --test --test-concurrency=1 --test-reporter=spec session-forensics/*.test.mjs"
   },
   "dependencies": {

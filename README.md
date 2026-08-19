@@ -476,6 +476,8 @@ work-capability-distiller-windows-x64-<时间>-manifest.json
 
 稳定版放在 [GitHub Releases](https://github.com/wzn1118/work-capability-distiller/releases)。每次提交的最新构建可以在 [Actions](https://github.com/wzn1118/work-capability-distiller/actions/workflows/ci.yml) 对应运行中下载。
 
+正式版本使用标签自动发布：维护者将 `package.json` 更新到目标版本并推送同名标签（例如 `v0.1.2`）后，Release 工作流会先核对标签与项目版本，再运行 Windows 真实安装测试、构建和完整性校验，最后创建或更新 GitHub Release。版本不一致时会在上传前停止。
+
 ## CI 与质量门
 
 CI 分成两个独立作业：
@@ -518,6 +520,9 @@ npm run release:windows
 
 # 上传前校验最新安装器、ZIP 和哈希清单
 npm run release:verify
+
+# 确认发布标签与 package.json 版本一致
+npm run release:check-version -- "v0.1.2"
 ```
 
 完整本地检查：
