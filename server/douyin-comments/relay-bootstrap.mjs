@@ -21,10 +21,10 @@ async function relayOnline(port, fetchImpl = fetch) {
 export function chromeCandidates(environment = process.env) {
   return [
     environment.KOLFORGE_CHROME_PATH,
-    environment.PROGRAMFILES && path.join(environment.PROGRAMFILES, 'Google', 'Chrome', 'Application', 'chrome.exe'),
-    environment['PROGRAMFILES(X86)'] && path.join(environment['PROGRAMFILES(X86)'], 'Google', 'Chrome', 'Application', 'chrome.exe'),
-    environment.LOCALAPPDATA && path.join(environment.LOCALAPPDATA, 'Google', 'Chrome', 'Application', 'chrome.exe'),
-    environment.PROGRAMFILES && path.join(environment.PROGRAMFILES, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+    environment.PROGRAMFILES && path.win32.join(environment.PROGRAMFILES, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    environment['PROGRAMFILES(X86)'] && path.win32.join(environment['PROGRAMFILES(X86)'], 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    environment.LOCALAPPDATA && path.win32.join(environment.LOCALAPPDATA, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    environment.PROGRAMFILES && path.win32.join(environment.PROGRAMFILES, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
   ].filter(Boolean);
 }
 
