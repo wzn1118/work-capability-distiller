@@ -440,6 +440,7 @@ async function buildSetupExecutable({ zipPath, outputPath }) {
 
 export async function buildPortableWorkbench({ outputRoot = PORTABLE_WORKBENCH_OUTPUT_ROOT, now = new Date() } = {}) {
   if (process.platform !== 'win32' || process.arch !== 'x64') throw new Error('当前换机安装包面向 Windows x64，请在 Windows x64 工作台中生成。');
+  const workspacePackage = JSON.parse(await fsp.readFile(path.join(WORKSPACE_ROOT, 'package.json'), 'utf8'));
   const createdAt = now.toISOString();
   const packageKey = `work-capability-distiller-windows-x64-${timestampKey(now)}`;
   const resolvedOutputRoot = path.resolve(outputRoot);
@@ -460,6 +461,7 @@ export async function buildPortableWorkbench({ outputRoot = PORTABLE_WORKBENCH_O
   const metadata = {
     schemaVersion: 2,
     productName: '零代码工作能力蒸馏器',
+    productVersion: workspacePackage.version,
     packageKey,
     createdAt,
     platform: 'win32',

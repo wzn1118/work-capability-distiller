@@ -82,7 +82,9 @@ test('Windows 换机安装包可解压、自检并启动完整主工作台', asy
   }
 
   const metadata = JSON.parse(await fs.readFile(path.join(result.packageDir, 'version.json'), 'utf8'));
+  const workspacePackage = JSON.parse(await fs.readFile(path.resolve('package.json'), 'utf8'));
   assert.equal(metadata.schemaVersion, 2);
+  assert.equal(metadata.productVersion, workspacePackage.version);
   assert.equal(metadata.dataPolicy.includesBrowserAuthentication, false);
   assert.equal(metadata.dataPolicy.includesApiKeys, false);
   assert.equal(metadata.dataPolicy.includesConversations, false);
