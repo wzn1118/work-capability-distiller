@@ -1,7 +1,19 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { SpreadsheetFile, Workbook } from '@oai/artifact-tool';
+import { deflateRawSync } from 'node:zlib';
+
+// The rich workbook runtime is available in the desktop distribution but is
+// intentionally not a public npm dependency. Keep it optional so the archive
+// builder remains runnable from a clean GitHub checkout.
+let SpreadsheetFile;
+let Workbook;
+try {
+  ({ SpreadsheetFile, Workbook } = await import('@oai/artifact-tool'));
+} catch {
+  SpreadsheetFile = null;
+  Workbook = null;
+}
 
 export const DEFAULT_INPUT_DIR = 'E:/kolforge-data/manual-douyin/20260813-sanguosha-wuhu-all';
 
@@ -734,7 +746,182 @@ function createFieldGuideSheet(workbook) {
   return sheet;
 }
 
+function fallbackCellText(value) {
+  if (value instanceof Date) return value.toISOString();
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+function fallbackMatrix(rows, columns) {
+  return [
+    columns.map(([label]) => label),
+    ...rows.map((row) => columns.map(([, key, type]) => fallbackCellText(workbookCellValue(row[key], type)))),
+  ];
+}
+
+function createFallbackWorkbook({ manifest, allComments, videoSummaries }) {
+  const sheets = [
+    { name: '全部评论', matrix: fallbackMatrix(allComments, COMMENT_COLUMNS) },
+    { name: '视频汇总', matrix: fallbackMatrix(videoSummaries, VIDEO_COLUMNS) },
+  ];
+  const commentValues = (key) => allComments.map((row) => row[key]);
+  const videoValues = (key) => videoSummaries.map((row) => row[key]);
+  const count = (values, predicate) => values.filter(predicate).length;
+  sheets.push({
+    name: '采集审计',
+    matrix: [
+      ['抖音评论采集归档审计', ''],
+      [],
+      ['指标', '结果'],
+      ['账号', spreadsheetText(manifest.account_name)],
+      ['抖音号', spreadsheetText(manifest.douyin_id)],
+      ['归档生成时间', fallbackCellText(manifest.generated_at)],
+      ['归档状态', spreadsheetText(manifest.validation?.archive_status)],
+      ['Catalog 视频数', videoSummaries.length],
+      ['已有评论文件视频数', count(videoValues('comments_file_exists'), (value) => value === '已存在')],
+      ['已有元数据文件视频数', count(videoValues('metadata_file_exists'), (value) => value === '已存在')],
+      ['评论总数', allComments.length],
+      ['根评论数', count(commentValues('relationship_type'), (value) => value === '根评论')],
+      ['回复数', count(commentValues('relationship_type'), (value) => value === '回复根评论' || value === '回复其他回复')],
+      ['已完整关联回复数', count(commentValues('relationship_status'), (value) => value === '已完整关联')],
+      ['直接父评论未采集回复数', count(commentValues('relationship_status'), (value) => value === '直接父评论未采集')],
+      ['祖先评论链不完整回复数', count(commentValues('relationship_status'), (value) => value === '祖先评论链不完整')],
+      ['数量完全一致视频数', count(videoValues('status'), (value) => value === 'complete')],
+      ['公开接口遍历完成但有差额视频数', count(videoValues('status'), (value) => value === 'public_api_complete_with_gap')],
+      ['未完成视频数', count(videoValues('status'), (value) => value === 'incomplete')],
+      ['重复评论ID数', manifest.comments?.duplicate_comment_count ?? 0],
+    ],
+  });
+  const fieldRows = [
+    ...COMMENT_COLUMNS.map(([label, key, type, description]) => ({ sheet: '全部评论', label, key, type, description })),
+    ...VIDEO_COLUMNS.map(([label, key, type, description]) => ({ sheet: '视频汇总', label, key, type, description })),
+    { sheet: '采集审计', label: 'public_api_complete_with_gap', key: 'status', type: 'text', description: '公开接口的根评论和回复线程均已分页到末页，但返回条数与平台声明数仍有差额；不据此推断差额原因。' },
+    { sheet: '采集审计', label: '评论时间', key: 'comment_time', type: 'text', description: '保留页面提供的相对时间或绝对时间；无可靠基准时不伪造绝对时间。' },
+  ];
+  sheets.push({
+    name: '字段说明',
+    matrix: fallbackMatrix(fieldRows, [
+      ['工作表', 'sheet', 'text'],
+      ['显示列名/术语', 'label', 'text'],
+      ['内部字段', 'key', 'text'],
+      ['数据类型', 'type', 'text'],
+      ['含义', 'description', 'text'],
+    ]),
+  });
+  return { kind: 'fallback', sheets };
+}
+
+function xmlEscape(value) {
+  return fallbackCellText(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function excelColumnNameForFallback(oneBasedIndex) {
+  return excelColumnName(oneBasedIndex);
+}
+
+function sheetXml(matrix) {
+  const rows = matrix.map((row, rowIndex) => {
+    const cells = (row || []).map((value, columnIndex) => {
+      if (value === undefined || value === null || value === '') return '';
+      const reference = `${excelColumnNameForFallback(columnIndex + 1)}${rowIndex + 1}`;
+      const text = xmlEscape(value);
+      if (typeof value === 'number' && Number.isFinite(value)) return `<c r="${reference}" t="n"><v>${value}</v></c>`;
+      if (typeof value === 'boolean') return `<c r="${reference}" t="b"><v>${value ? 1 : 0}</v></c>`;
+      return `<c r="${reference}" t="inlineStr"><is><t xml:space="preserve">${text}</t></is></c>`;
+    }).join('');
+    return `<row r="${rowIndex + 1}">${cells}</row>`;
+  }).join('');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${rows}</sheetData></worksheet>`;
+}
+
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function zipArchive(entries) {
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+  for (const entry of entries) {
+    const name = Buffer.from(entry.name, 'utf8');
+    const raw = Buffer.from(entry.content, 'utf8');
+    const compressed = deflateRawSync(raw, { level: 6 });
+    const header = Buffer.alloc(30);
+    header.writeUInt32LE(0x04034b50, 0);
+    header.writeUInt16LE(20, 4);
+    header.writeUInt16LE(0, 6);
+    header.writeUInt16LE(8, 8);
+    header.writeUInt16LE(0, 10);
+    header.writeUInt16LE(0, 12);
+    header.writeUInt32LE(crc32(raw), 14);
+    header.writeUInt32LE(compressed.length, 18);
+    header.writeUInt32LE(raw.length, 22);
+    header.writeUInt16LE(name.length, 26);
+    header.writeUInt16LE(0, 28);
+    localParts.push(header, name, compressed);
+    const central = Buffer.alloc(46);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(0, 8);
+    central.writeUInt16LE(8, 10);
+    central.writeUInt16LE(0, 12);
+    central.writeUInt16LE(0, 14);
+    central.writeUInt32LE(crc32(raw), 16);
+    central.writeUInt32LE(compressed.length, 20);
+    central.writeUInt32LE(raw.length, 24);
+    central.writeUInt16LE(name.length, 28);
+    central.writeUInt16LE(0, 30);
+    central.writeUInt16LE(0, 32);
+    central.writeUInt16LE(0, 34);
+    central.writeUInt16LE(0, 36);
+    central.writeUInt32LE(0, 38);
+    central.writeUInt32LE(offset, 42);
+    centralParts.push(central, name);
+    offset += header.length + name.length + compressed.length;
+  }
+  const centralDirectory = Buffer.concat(centralParts);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(0, 8);
+  end.writeUInt16LE(entries.length, 10);
+  end.writeUInt16LE(entries.length, 12);
+  end.writeUInt32LE(centralDirectory.length, 14);
+  end.writeUInt32LE(offset, 18);
+  return Buffer.concat([...localParts, centralDirectory, end]);
+}
+
+function fallbackXlsxBuffer(workbook) {
+  const sheetEntries = workbook.sheets.map((sheet, index) => ({
+    name: `xl/worksheets/sheet${index + 1}.xml`,
+    content: sheetXml(sheet.matrix),
+  }));
+  const sheetRelationships = workbook.sheets.map((sheet, index) => `<sheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" name="${xmlEscape(sheet.name)}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`).join('');
+  const rels = workbook.sheets.map((sheet, index) => `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`).join('');
+  const overrides = workbook.sheets.map((sheet, index) => `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('');
+  return zipArchive([
+    { name: '[Content_Types].xml', content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${overrides}</Types>` },
+    { name: '_rels/.rels', content: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+    { name: 'xl/workbook.xml', content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheetRelationships}</sheets></workbook>` },
+    { name: 'xl/_rels/workbook.xml.rels', content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${rels}<Relationship Id="rId${workbook.sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
+    { name: 'xl/styles.xml', content: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><color theme="1"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs></styleSheet>' },
+    ...sheetEntries,
+  ]);
+}
+
 export function createDouyinCommentWorkbook({ manifest, allComments, videoSummaries }) {
+  if (!Workbook) return createFallbackWorkbook({ manifest, allComments, videoSummaries });
   const workbook = Workbook.create();
   writeTabularSheet(workbook, {
     name: '全部评论',
@@ -771,8 +958,12 @@ async function exportWorkbook(workbook, filePath) {
   const temporaryPath = `${filePath}.tmp-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.xlsx`;
   const inspectPath = `${temporaryPath}.inspect.ndjson`;
   try {
-    const output = await SpreadsheetFile.exportXlsx(workbook);
-    await output.save(temporaryPath);
+    if (workbook.kind === 'fallback') {
+      await fs.writeFile(temporaryPath, fallbackXlsxBuffer(workbook));
+    } else {
+      const output = await SpreadsheetFile.exportXlsx(workbook);
+      await output.save(temporaryPath);
+    }
     await fs.rm(filePath, { force: true });
     await fs.rename(temporaryPath, filePath);
   } finally {

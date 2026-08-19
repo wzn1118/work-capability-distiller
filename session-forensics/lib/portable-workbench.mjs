@@ -223,6 +223,17 @@ const staging = target + '.next';
 const backup = target + '.previous';
 
  async function exists(file) { try { await fsp.access(file); return true; } catch { return false; } }
+ async function renameWithRetry(source, destination, attempts = 12) {
+   let lastError;
+   for (let attempt = 0; attempt < attempts; attempt += 1) {
+     try { await fsp.rename(source, destination); return; } catch (error) {
+       lastError = error;
+       if (!['EPERM', 'EBUSY', 'EACCES'].includes(error?.code) || attempt === attempts - 1) throw error;
+       await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+     }
+   }
+   throw lastError;
+ }
  async function alive(pid) { if (!Number.isInteger(pid) || pid <= 0 || pid === process.pid) return false; try { process.kill(pid, 0); return true; } catch { return false; } }
  async function stopPreviousWorkbench() {
    const statePath = path.join(target, 'run-state.json');
@@ -259,11 +270,11 @@ if (!await runSelfCheck(staging)) {
   throw new Error('新版本自检失败，当前安装保持不变。');
 }
 await fsp.rm(backup, { recursive: true, force: true });
-if (await exists(target)) await fsp.rename(target, backup);
+if (await exists(target)) await renameWithRetry(target, backup);
 try {
-  await fsp.rename(staging, target);
+  await renameWithRetry(staging, target);
 } catch (error) {
-  if (await exists(backup) && !await exists(target)) await fsp.rename(backup, target);
+  if (await exists(backup) && !await exists(target)) await renameWithRetry(backup, target);
   throw error;
 }
 await fsp.copyFile(path.join(target, 'version.json'), path.join(target, 'installed-version.json'));
