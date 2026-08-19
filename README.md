@@ -474,6 +474,12 @@ work-capability-distiller-windows-x64-<时间>-manifest.json
 
 `manifest.json` 记录文件名、字节数和 SHA-256。GitHub Actions 的 Windows 作业会真实执行安装、二次升级、产物保留、自检、ZIP 解压和工作台健康检查；上传前还会逐个重新计算文件大小与 SHA-256，确认清单、安装器和 ZIP 彼此对得上，随后才上传上述三个文件。
 
+正式 Release 还会为三个文件生成 GitHub 构建来源证明。SHA-256 像包裹封条，来源证明则像带签章的发货单：它会把文件摘要和构建它的仓库、提交及工作流绑定起来。安装 GitHub CLI 后可验证下载文件：
+
+```powershell
+gh attestation verify ".\work-capability-distiller-*-setup.exe" --repo wzn1118/work-capability-distiller
+```
+
 稳定版放在 [GitHub Releases](https://github.com/wzn1118/work-capability-distiller/releases)。每次提交的最新构建可以在 [Actions](https://github.com/wzn1118/work-capability-distiller/actions/workflows/ci.yml) 对应运行中下载。
 
 正式版本使用标签自动发布：维护者将 `package.json` 更新到目标版本并推送同名标签（例如 `v0.1.2`）后，Release 工作流会先核对标签与项目版本，再运行 Windows 真实安装测试、构建和完整性校验，最后创建或更新 GitHub Release。版本不一致时会在上传前停止。
@@ -522,7 +528,7 @@ npm run release:windows
 npm run release:verify
 
 # 确认发布标签与 package.json 版本一致
-npm run release:check-version -- "v0.1.2"
+npm run release:check-version -- "v0.1.3"
 ```
 
 完整本地检查：

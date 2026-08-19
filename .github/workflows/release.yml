@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -43,6 +45,14 @@ jobs:
 
       - name: Verify Windows release files
         run: npm run release:verify
+
+      - name: Attest Windows release provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            output/main-workbench-distributions/*-setup.exe
+            output/main-workbench-distributions/*.zip
+            output/main-workbench-distributions/*-manifest.json
 
       - name: Create or update GitHub release
         shell: pwsh
