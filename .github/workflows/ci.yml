@@ -78,7 +78,7 @@ jobs:
           npm run release:verify -- "$($manifest.FullName)"
 
       - name: Upload Windows installer, ZIP, and checksums
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: work-capability-distiller-windows-x64-${{ github.sha }}
           path: |
