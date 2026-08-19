@@ -68,6 +68,15 @@ jobs:
       - name: Build downloadable Windows installer
         run: npm run release:windows
 
+      - name: Verify downloadable Windows installer
+        shell: pwsh
+        run: |
+          $manifest = Get-ChildItem 'output/main-workbench-distributions/*-manifest.json' |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+          if (-not $manifest) { throw '找不到 Windows 发布清单。' }
+          npm run release:verify -- "$($manifest.FullName)"
+
       - name: Upload Windows installer, ZIP, and checksums
         uses: actions/upload-artifact@v4
         with:

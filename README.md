@@ -472,7 +472,7 @@ work-capability-distiller-windows-x64-<时间>.zip
 work-capability-distiller-windows-x64-<时间>-manifest.json
 ```
 
-`manifest.json` 记录文件名、字节数和 SHA-256。GitHub Actions 的 Windows 作业会真实执行安装、二次升级、产物保留、自检、ZIP 解压和工作台健康检查，随后上传上述三个文件。
+`manifest.json` 记录文件名、字节数和 SHA-256。GitHub Actions 的 Windows 作业会真实执行安装、二次升级、产物保留、自检、ZIP 解压和工作台健康检查；上传前还会逐个重新计算文件大小与 SHA-256，确认清单、安装器和 ZIP 彼此对得上，随后才上传上述三个文件。
 
 稳定版放在 [GitHub Releases](https://github.com/wzn1118/work-capability-distiller/releases)。每次提交的最新构建可以在 [Actions](https://github.com/wzn1118/work-capability-distiller/actions/workflows/ci.yml) 对应运行中下载。
 
@@ -515,6 +515,9 @@ npm run test:portable
 
 # 生成 Windows 安装器、ZIP 和哈希清单
 npm run release:windows
+
+# 上传前校验最新安装器、ZIP 和哈希清单
+npm run release:verify
 ```
 
 完整本地检查：

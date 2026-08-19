@@ -34,6 +34,7 @@
     "session:ui": "node session-forensics/ui-server.mjs",
     "session:portable": "node session-forensics/build-portable-workbench.mjs",
     "release:windows": "node session-forensics/build-portable-workbench.mjs",
+    "release:verify": "node session-forensics/verify-portable-release.mjs",
     "test:session-forensics": "node --test --test-concurrency=1 --test-reporter=spec session-forensics/*.test.mjs"
   },
   "dependencies": {
