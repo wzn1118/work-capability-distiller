@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -51,10 +51,10 @@ jobs:
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -64,3 +64,18 @@ jobs:
 
       - name: Run Windows portable installer test
         run: npm run test:portable
+
+      - name: Build downloadable Windows installer
+        run: npm run release:windows
+
+      - name: Upload Windows installer, ZIP, and checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: work-capability-distiller-windows-x64-${{ github.sha }}
+          path: |
+            output/main-workbench-distributions/*-setup.exe
+            output/main-workbench-distributions/*.zip
+            output/main-workbench-distributions/*-manifest.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14

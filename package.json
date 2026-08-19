@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22 <25",
+    "npm": ">=10"
+  },
+  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "vite",
     "api": "node --max-old-space-size=1024 server/index.mjs",
@@ -28,6 +33,7 @@
     "session:mcp": "node mcp/codex-session-forensics-server.mjs",
     "session:ui": "node session-forensics/ui-server.mjs",
     "session:portable": "node session-forensics/build-portable-workbench.mjs",
+    "release:windows": "node session-forensics/build-portable-workbench.mjs",
     "test:session-forensics": "node --test --test-concurrency=1 --test-reporter=spec session-forensics/*.test.mjs"
   },
   "dependencies": {
