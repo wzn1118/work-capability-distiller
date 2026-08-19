@@ -1022,6 +1022,8 @@ if (!env.CONVERSATION_AGENT_HOST && !env.HOST) env.CONVERSATION_AGENT_HOST = '12
 const child = spawn(process.execPath, ['agent-server.mjs'], { cwd: AGENT_ROOT, env, stdio: ['inherit', 'pipe', 'pipe'], windowsHide: false });
 let seen = '';
 let browserOpened = false;
+let shuttingDown = false;
+let shutdownTimer = null;
 
 function openBrowser(address) {
   if (process.env.CONVERSATION_AGENT_NO_BROWSER === '1' || browserOpened) return;
@@ -1046,8 +1048,29 @@ function observe(chunk, output) {
 child.stdout.on('data', (chunk) => observe(chunk, process.stdout));
 child.stderr.on('data', (chunk) => observe(chunk, process.stderr));
 child.on('error', (error) => { process.stderr.write(\`启动失败：\${error.message}\\n\`); process.exitCode = 1; });
-child.on('close', (code) => { process.exitCode = Number.isInteger(code) ? code : 1; });
-for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => { if (!child.killed) child.kill(signal); });
+child.on('close', (code) => {
+  if (shutdownTimer) clearTimeout(shutdownTimer);
+  process.exit(shuttingDown ? 0 : (Number.isInteger(code) ? code : 1));
+});
+
+function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  shutdownTimer = setTimeout(() => {
+    if (child.exitCode === null) {
+      try { child.kill(process.platform === 'win32' ? undefined : 'SIGKILL'); } catch {}
+    }
+    process.exit(0);
+  }, 2000);
+  if (child.exitCode === null) {
+    try { child.kill(signal); } catch { process.exit(0); }
+  } else {
+    process.exit(0);
+  }
+}
+
+process.once('SIGINT', () => shutdown('SIGINT'));
+process.once('SIGTERM', () => shutdown('SIGTERM'));
 `;
 }
 

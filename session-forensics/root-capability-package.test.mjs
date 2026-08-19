@@ -650,7 +650,11 @@ test('v3 根能力包生成统一契约、中文 UI 和可恢复本地执行运�
     if (portable.child.exitCode === null) {
       const exited = new Promise((resolve) => portable.child.once('exit', resolve));
       portable.child.kill('SIGTERM');
-      await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 5000))]);
+      const stopped = await Promise.race([
+        exited.then(() => true),
+        new Promise((resolve) => setTimeout(() => resolve(false), 5000)),
+      ]);
+      assert.equal(stopped, true, '独立 Agent 启动器收到 SIGTERM 后应在 5 秒内退出');
     }
   }
 
@@ -797,7 +801,11 @@ test('v3 根能力包 Agent 会自动完成项目取证、文件修改、命令�
     if (portable?.child.exitCode === null) {
       const exited = new Promise((resolve) => portable.child.once('exit', resolve));
       portable.child.kill('SIGTERM');
-      await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 5000))]);
+      const stopped = await Promise.race([
+        exited.then(() => true),
+        new Promise((resolve) => setTimeout(() => resolve(false), 5000)),
+      ]);
+      assert.equal(stopped, true, '独立 Agent 启动器收到 SIGTERM 后应在 5 秒内退出');
     }
     await new Promise((resolve) => provider.server.close(resolve));
     if (previousCodexHome === undefined) delete process.env.CODEX_HOME;

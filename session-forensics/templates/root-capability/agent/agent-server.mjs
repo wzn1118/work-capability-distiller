@@ -736,6 +736,17 @@ server = http.createServer((request, response) => route(request, response).catch
   else response.end();
 }));
 server.listen(PORT, HOST, () => process.stdout.write(`根能力包独立 Agent 已启动：http://${HOST}:${server.address().port}/\n`));
-const shutdown = () => server.close(() => process.exit(0));
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+let shuttingDown = false;
+const shutdown = () => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  const forcedExit = setTimeout(() => process.exit(0), 1500);
+  forcedExit.unref();
+  server.close(() => {
+    clearTimeout(forcedExit);
+    process.exit(0);
+  });
+  server.closeIdleConnections?.();
+};
+process.once('SIGINT', shutdown);
+process.once('SIGTERM', shutdown);
