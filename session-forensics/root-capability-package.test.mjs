@@ -527,7 +527,10 @@ test('v3 根能力包生成统一契约、中文 UI 和可恢复本地执行运�
     assert.equal(portableHealth.installation.ready, true);
     assert.equal(portableHealth.installation.dependencies.thirdPartyPackages, 0);
     assert.equal(portableHealth.installation.state.packageDirectoryReadOnlySupported, true);
-    assert.equal(portableHealth.installation.launch.directLaunch, 'launch.cmd');
+    assert.equal(
+      portableHealth.installation.launch.directLaunch,
+      process.platform === 'win32' ? 'launch.cmd' : 'launch.sh',
+    );
     assert.equal(portableHealth.chatGptWeb.connected, false);
     assert.deepEqual(portableHealth.chatGptWeb.supportedPlatforms.map((platform) => platform.id), ['chatgpt', 'deepseek', 'gemini', 'doubao']);
     assert.match(portableHealth.chatGptWeb.pairingCode, /^\d{6}$/);
