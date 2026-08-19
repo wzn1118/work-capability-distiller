@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "codex-session-forensics": {
+      "command": "node",
+      "args": [
+        "C:/Users/10847/Documents/MKT大师/mcp/codex-session-forensics-server.mjs"
+      ],
+      "env": {
+        "CODEX_HOME": "E:/CodexHome",
+        "CODEX_SESSION_ROOT": "E:/CodexHome/sessions"
+      }
+    }
+  }
+}

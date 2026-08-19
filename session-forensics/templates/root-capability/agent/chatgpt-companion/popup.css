@@ -1,0 +1,21 @@
+:root { color-scheme: light; font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif; color: #10231f; background: #f3f7f5; }
+* { box-sizing: border-box; }
+body { width: 340px; margin: 0; }
+main { display: grid; gap: 12px; padding: 20px; }
+.kicker { margin: 0; color: #08786d; font-size: 11px; font-weight: 800; }
+h1 { margin: -5px 0 0; font-size: 20px; }
+.summary, #state { margin: 0; color: #526762; font-size: 12px; line-height: 1.55; }
+.auto-pair-card { display: grid; gap: 5px; padding: 12px; border: 1px solid #9fc9b9; border-left: 4px solid #08786d; border-radius: 4px; background: #f3faf7; }
+.auto-pair-card strong { color: #173f3a; font-size: 14px; }
+.auto-pair-card span { color: #526762; font-size: 11px; line-height: 1.45; }
+.auto-pair-card button { margin-top: 3px; }
+.manual-pairing { display: grid; gap: 10px; border-top: 1px solid #d4e0dc; padding-top: 10px; }
+.manual-pairing summary { color: #526762; font-size: 11px; font-weight: 700; cursor: pointer; }
+label { display: grid; gap: 5px; font-size: 12px; font-weight: 700; }
+input, select { min-height: 40px; width: 100%; padding: 0 10px; border: 1px solid #aac1bb; border-radius: 4px; background: #fff; color: inherit; font: inherit; }
+button { min-height: 40px; border: 1px solid #08786d; border-radius: 4px; background: #08786d; color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+button.secondary { background: #fff; color: #08786d; }
+button.quiet { min-height: 32px; border-color: transparent; background: transparent; color: #526762; }
+button:disabled { cursor: wait; opacity: .55; }
+#state.success { color: #067052; font-weight: 700; }
+#state.error { color: #a02f2f; }

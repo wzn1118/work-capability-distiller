@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>本机 Codex 对话蒸馏器</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true">对话<br>蒸馏</div>
+    <div>
+      <p class="eyebrow">本机 Codex 对话 · 自动发现</p>
+      <h1>把已完成的 Codex 对话蒸馏成可安装能力</h1>
+      <p class="lede">自动搜索本机 Codex 会话，读取所选会话的目标、纠正、工具、文件修改和关联项目证据，输出会话专属 Skill、MCP 与可操作独立 Agent。</p>
+    </div>
+    <span class="local-badge">仅本机读取</span>
+  </header>
+
+  <main>
+    <ol class="steps" aria-label="使用步骤">
+      <li class="active"><b>1</b><span>选择本机对话</span></li>
+      <li><b>2</b><span>查看蒸馏建议</span></li>
+      <li><b>3</b><span>生成能力包</span></li>
+    </ol>
+
+    <section class="panel session-panel" aria-labelledby="local-sessions-title">
+      <div class="panel-heading">
+        <div>
+          <span class="step-label">默认入口</span>
+          <h2 id="local-sessions-title">本机 Codex 对话</h2>
+          <p>已自动搜索本机 Codex 的会话归档。选择一条会话可复用单次工作流；选择多条可从项目演进中提炼共同能力。</p>
+        </div>
+        <button id="refresh-sessions" class="secondary icon-command" type="button" title="重新搜索本机 Codex 会话">刷新列表</button>
+      </div>
+      <div class="session-toolbar">
+        <label class="search-label"><span>搜索语义标题、项目、工具或会话编号</span><input id="session-search" type="search" placeholder="例如：PPT、报告、能力包、项目名称"></label>
+        <p id="session-count" class="quiet">正在搜索本机 Codex 会话……</p>
+      </div>
+      <section id="task-chain-panel" class="task-chain-panel" aria-labelledby="task-chain-title" hidden>
+        <div><span class="step-label">优先建议</span><h3 id="task-chain-title">先蒸馏这些相关任务链</h3><p>系统按会话标题、主题、工具线索和时间顺序归并。点击“选择整条链”会把相关会话一并加入，不会遗漏后续修正。</p></div>
+        <div id="task-chain-list" class="task-chain-list"></div>
+        <div class="task-chain-actions"><span id="task-chain-count" class="quiet"></span><button id="open-task-chain-browser" class="secondary" type="button">查看全部任务链</button></div>
+      </section>
+      <details id="task-chain-browser" class="task-chain-browser" open>
+        <summary><span>完整任务链目录</span><small>搜索后可一次选择一条完整任务演进链</small></summary>
+        <div class="task-chain-browser-body">
+          <label class="search-label"><span>搜索任务链标题、主题、工具或会话编号</span><input id="task-chain-search" type="search" placeholder="例如：PPT、报告、能力包、测试"></label>
+          <p id="task-chain-browser-count" class="quiet">正在读取全量任务链……</p>
+          <div id="all-task-chain-list" class="task-chain-list full" aria-live="polite"><p class="empty">正在读取任务链目录……</p></div>
+          <button id="load-more-task-chains" class="secondary load-more" type="button" hidden>加载更多任务链</button>
+        </div>
+      </details>
+      <div id="session-list" class="session-list" aria-live="polite"><p class="empty">正在读取本机会话标题……</p></div>
+      <button id="load-more-sessions" class="secondary load-more" type="button" hidden>加载更多会话</button>
+      <div class="selection-footer">
+        <strong id="selected-session-summary">尚未选择会话</strong>
+        <button id="preview-button" class="primary" type="button">蒸馏所选会话</button>
+      </div>
+      <details class="advanced-panel">
+        <summary>高级选项：指定关联项目或导入导出的会话文件</summary>
+        <div class="advanced-body">
+          <div class="project-path-field"><label class="project-path-label" for="project-path">关联项目文件夹（可选）<small>一般无需指定。留空会自动从所选会话的工作目录、文件变更和 Git 标记中发现项目；需要指定时请点击选择按钮。</small></label><div class="path-picker-control"><input id="project-path" readonly placeholder="留空：自动发现关联项目" autocomplete="off"><button id="pick-project-path" class="secondary path-picker-button" type="button">选择项目文件夹</button></div></div>
+          <div class="backup-import">
+            <div><h3>导入会话文件（备用）</h3><p>当这台电脑没有原始 Codex 归档时，可选择 JSON/JSONL 文件或粘贴导出的对话文本。</p></div>
+            <label class="file-button" for="conversation-file">选择文件<input id="conversation-file" type="file" multiple accept=".json,.jsonl,.txt,application/json,text/plain"></label>
+          </div>
+          <textarea id="conversation-content" rows="8" placeholder="粘贴 JSONL 或对话文本；只有不选择本机会话时才会使用这里的内容。"></textarea>
+          <div class="input-footer"><span id="file-status">未选择备用文件</span><span id="character-count">0 字符</span></div>
+          <div id="selected-source-list" class="selected-source-list"><p>未选择备用会话文件。</p></div>
+        </div>
+      </details>
+      <details class="advanced-panel">
+        <summary>高级选项：使用模型增强语义命名与描述</summary>
+        <div class="advanced-body">
+          <p class="quiet">不填写时仍会用本地证据规则生成标题、P 阶段和优先级建议。密钥只在本次请求内存中使用，绝不会写入能力包。</p>
+          <div class="model-grid">
+            <label>模型接口地址<input id="model-base-url" value="https://api.openai.com/v1" placeholder="例如 https://api.example.com/v1"><small>填写完整地址，通常以 /v1 结尾。</small></label>
+            <label>模型名称<input id="model-name" placeholder="例如 gpt-4o-mini"><small>可留空，使用本地规则预览。</small></label>
+            <label class="wide">临时 API 密钥<input id="model-api-key" type="password" autocomplete="off" placeholder="只在本次蒸馏请求中使用"><small>不会保存到能力包、配置文件或浏览器存储。</small></label>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section id="preview-panel" class="panel preview-panel" hidden>
+      <div class="panel-heading">
+        <div><span class="step-label">蒸馏结果</span><h2>这套能力具体能做什么</h2><p id="generation-note">正在等待分析结果。</p></div>
+        <span id="session-meta" class="meta-pill"></span>
+      </div>
+      <div class="editable-grid">
+        <label>能力包名称<input id="capability-title"></label>
+        <label>独立界面的首要操作<input id="capability-action"></label>
+        <label class="wide">要解决的具体问题<textarea id="capability-purpose" rows="3"></textarea></label>
+      </div>
+
+      <section class="recommendation-panel" aria-labelledby="recommendation-title">
+        <div class="knowledge-heading"><div><span class="step-label">可执行优先级</span><h3 id="recommendation-title">先做什么，为什么，以及会产出什么</h3></div><span id="recommendation-summary" class="meta-pill"></span></div>
+        <p id="recommendation-note" class="quiet"></p>
+        <div id="recommendation-list" class="recommendation-list"></div>
+        <div id="recommendation-links" class="direct-links"></div>
+      </section>
+
+      <div class="definition-grid">
+        <article><h3>需要用户提供</h3><ul id="input-list"></ul></article>
+        <article><h3>会执行的能力</h3><ul id="capability-list"></ul></article>
+        <article><h3>会交付的结果</h3><ul id="deliverable-list"></ul></article>
+        <article><h3>后续修正优先级</h3><ol id="correction-list"></ol></article>
+      </div>
+      <div class="source-strip"><strong>已读取的语义阶段</strong><span id="stage-summary"></span></div>
+      <section class="semantic-quality" aria-labelledby="semantic-quality-title">
+        <div><span class="step-label">蒸馏质量</span><h3 id="semantic-quality-title">每个名称都必须能回到会话、工具或文件证据</h3><p id="semantic-quality-summary">正在检查阶段命名、专长、执行方法、交付物和证据是否具体。</p></div>
+        <ul id="semantic-quality-guarantees"></ul>
+        <ul id="semantic-quality-issues"></ul>
+      </section>
+
+      <section class="project-discovery-panel" aria-labelledby="project-discovery-title">
+        <div><span class="step-label">自动项目理解</span><h3 id="project-discovery-title">系统实际理解了哪些项目文件</h3><p id="project-discovery-summary">蒸馏完成后会显示项目定位方式、读取范围和采用原因。</p></div>
+        <div id="project-discovery-metrics" class="project-discovery-metrics"></div>
+        <div id="project-discovery-reasons" class="project-discovery-reasons"></div>
+        <div id="project-candidate-list" class="project-candidate-list" aria-live="polite"></div>
+      </section>
+
+      <details class="knowledge-preview" open>
+        <summary><span class="step-label">项目理解</span><span>从会话、项目与文件版本中读出的具体证据</span><span id="knowledge-coverage" class="meta-pill"></span></summary>
+        <div class="knowledge-body">
+          <div id="knowledge-metrics" class="knowledge-metrics"></div>
+          <h4>强语义 P 阶段</h4><div id="knowledge-stages" class="knowledge-list"></div>
+          <h4>跨会话执行时间线</h4><div id="knowledge-timeline" class="knowledge-table-wrap"></div>
+          <h4>项目目的、模块和入口</h4><div id="knowledge-model" class="knowledge-list"></div>
+          <h4>逐文件变更矩阵</h4><div id="knowledge-changes" class="knowledge-table-wrap"></div>
+          <h4>依赖影响范围</h4><div id="knowledge-impact" class="knowledge-table-wrap"></div>
+          <h4>文件原始、会话与当前版本</h4><div id="knowledge-versions" class="knowledge-table-wrap"></div>
+          <h4>生成产物血缘</h4><div id="knowledge-lineage" class="knowledge-table-wrap"></div>
+          <h4>产物复现状态</h4><div id="knowledge-reproduction" class="knowledge-table-wrap"></div>
+          <h4>后续修正与冲突裁决</h4><div id="knowledge-decisions" class="knowledge-table-wrap"></div>
+          <h4>覆盖范围与限制</h4><div id="knowledge-limitations" class="knowledge-list"></div>
+          <h4>项目快照与待补证问题</h4><div id="knowledge-snapshot" class="knowledge-list"></div>
+          <h4>主动读取记录</h4><div id="knowledge-reads" class="knowledge-table-wrap"></div>
+        </div>
+      </details>
+    </section>
+
+    <section id="export-panel" class="panel export-panel" hidden>
+      <div class="panel-heading compact"><div><span class="step-label">生成能力包</span><h2>选择交付形式</h2><p>默认全部生成。每种形式都附带本次会话的完整说明、P0-P3 优先级、证据索引和启动方式。</p></div></div>
+      <div class="target-grid">
+        <label class="target-option"><input type="checkbox" value="skill" checked><span><b>Skill</b><small>安装到 Codex 技能目录，继承这组会话的流程、证据和修正规则。</small></span></label>
+        <label class="target-option"><input type="checkbox" value="mcp" checked><span><b>MCP</b><small>把能力以工具接口提供给支持 MCP 的客户端。</small></span></label>
+        <label class="target-option"><input type="checkbox" value="agent" checked><span><b>独立 Agent</b><small>自带中文操作界面、模型连接、项目工作区和本地命令/文件工具。</small></span></label>
+      </div>
+      <button id="generate-button" class="primary" type="button">生成可安装能力包</button>
+      <div id="result" class="result" hidden></div>
+    </section>
+
+    <section id="package-catalog-panel" class="panel package-catalog-panel" aria-labelledby="package-catalog-title">
+      <div class="panel-heading">
+        <div>
+          <span class="step-label">已生成能力包</span>
+          <h2 id="package-catalog-title">在这里查看、下载和继续使用</h2>
+          <p>每次生成都会登记到本机目录。重新打开蒸馏器后，仍能看到包的用途、来源会话、功能组成、完整说明、ZIP 下载和一键启动独立 Agent 的入口。</p>
+        </div>
+        <button id="refresh-package-catalog" class="secondary" type="button">刷新能力包目录</button>
+      </div>
+      <div id="package-catalog-list" class="package-catalog-list" aria-live="polite"><p class="empty">正在读取已生成能力包……</p></div>
+      <section id="package-document-viewer" class="package-document-viewer" aria-labelledby="package-document-title" hidden>
+        <div class="document-heading"><div><span class="step-label">完整说明</span><h3 id="package-document-title">能力包说明</h3></div><button id="close-package-document" class="secondary" type="button">关闭说明</button></div>
+        <pre id="package-document-content"></pre>
+      </section>
+    </section>
+
+    <aside class="beginner-note"><strong>新手只需三步</strong><span>勾选本机对话</span><i>→</i><span>点击蒸馏</span><i>→</i><span>下载并运行能力包</span><small>项目定位、P 阶段、证据、说明和安装脚本都会自动生成。</small></aside>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

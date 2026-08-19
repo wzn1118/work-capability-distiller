@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "wuhu-mkt-insights": {
+      "command": "node",
+      "args": ["C:/Users/10847/Documents/MKT大师/mcp/wuhu-mkt-insights-server.mjs"],
+      "env": {
+        "WUHU_MKT_ROOT": "C:/Users/10847/Documents/MKT大师"
+      }
+    }
+  }
+}

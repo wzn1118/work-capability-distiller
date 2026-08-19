@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/trace-ir/v1",
+  "title": "会话轨迹中间表示 v1",
+  "type": "object",
+  "required": ["schemaVersion", "sessionId", "eventCount", "events", "fingerprint"],
+  "properties": {
+    "schemaVersion": { "const": "trace-ir/v1" },
+    "sessionId": { "type": ["string", "null"] },
+    "harness": { "type": "string" },
+    "eventCount": { "type": "integer", "minimum": 0 },
+    "unknownKinds": { "type": "array", "items": { "type": "string" } },
+    "events": { "type": "array", "items": { "$ref": "#/$defs/event" } },
+    "fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "$defs": {
+    "event": {
+      "type": "object",
+      "required": ["eventId", "kind", "harness", "payload", "provenance", "confidence"],
+      "properties": {
+        "eventId": { "type": "string" },
+        "kind": { "type": "string" },
+        "harness": { "type": "string" },
+        "payload": { "type": "object" },
+        "links": { "type": "object" },
+        "provenance": { "type": "object", "required": ["rawHash"] },
+        "confidence": { "type": "object", "required": ["level", "score"] }
+      }
+    }
+  }
+}

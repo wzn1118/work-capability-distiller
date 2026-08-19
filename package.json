@@ -1,0 +1,42 @@
+{
+  "name": "reachdesk-kol-workbench",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "api": "node --max-old-space-size=1024 server/index.mjs",
+    "collect:douyin-comments": "node server/scripts/collect-douyin-comments-cdp.mjs",
+    "audit:douyin-checkpoints": "node server/scripts/audit-douyin-api-checkpoints.mjs",
+    "merge:douyin-checkpoints": "node server/scripts/merge-douyin-api-checkpoints.mjs",
+    "archive:douyin-comments": "node server/scripts/build-douyin-comment-archive.mjs",
+    "dev:all": "node scripts/dev-all.mjs",
+    "build": "vite build",
+    "start": "node --max-old-space-size=1024 server/index.mjs",
+    "preview": "vite preview",
+    "test": "npm run test:server && npm run test:session-forensics",
+    "ci": "npm run build && npm test",
+    "test:portable": "node --test --test-reporter=spec session-forensics/portable-workbench.test.mjs",
+    "test:server": "node --test server/*.test.mjs",
+    "mkt:report": "python -X utf8 -u scripts/analyze-wuhu-repeat-user-background.py && python -X utf8 -u scripts/build-wuhu-repeat-commenter-identified-appendix.py && node scripts/generate-wuhu-mkt-master-report.mjs",
+    "mkt:verify": "python -X utf8 -u scripts/verify-wuhu-mkt-master-report.py",
+    "mkt:mcp": "node mcp/wuhu-mkt-insights-server.mjs",
+    "session:analyze": "node session-forensics/cli.mjs",
+    "session:verify": "node session-forensics/verify.mjs",
+    "session:package": "node session-forensics/package-cli.mjs",
+    "session:package-verify": "node session-forensics/package-verify.mjs",
+    "session:mcp": "node mcp/codex-session-forensics-server.mjs",
+    "session:ui": "node session-forensics/ui-server.mjs",
+    "session:portable": "node session-forensics/build-portable-workbench.mjs",
+    "test:session-forensics": "node --test --test-reporter=spec session-forensics/*.test.mjs"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "typescript": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {}
+}

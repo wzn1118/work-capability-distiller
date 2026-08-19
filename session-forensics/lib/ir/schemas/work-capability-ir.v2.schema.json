@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "work-capability-ir.v2.schema.json",
+  "title": "Work Capability IR v2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "runId",
+    "scope",
+    "userGoal",
+    "subjectIdentity",
+    "sourceContracts",
+    "coverageMatrix",
+    "evidenceGraph",
+    "executionGraph",
+    "portability",
+    "releaseDecision",
+    "fingerprint"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "work-capability-ir/v2" },
+    "runId": { "type": "string", "minLength": 1 },
+    "scope": { "enum": ["single-conversation", "multi-conversation", "project", "multi-project"] },
+    "userGoal": { "type": "string", "minLength": 1 },
+    "latestCorrections": { "type": "array" },
+    "subjectIdentity": { "type": "object" },
+    "sourceContracts": { "type": "array" },
+    "observations": { "type": "array" },
+    "coverageMatrix": { "type": "object" },
+    "conflicts": { "type": "array" },
+    "evidenceGraph": { "type": "object" },
+    "executionGraph": { "type": "object" },
+    "semanticEvaluation": { "type": "object" },
+    "portability": { "type": "object" },
+    "releaseDecision": { "type": "object" },
+    "capabilities": { "type": "array" },
+    "domainProfile": { "type": "object" },
+    "provenance": { "type": "object" },
+    "fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": true
+}

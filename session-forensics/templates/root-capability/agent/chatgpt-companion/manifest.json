@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "能力包网页聊天记录伴侣",
+  "version": "2.5.0",
+  "description": "把当前已登录的网页聊天与本机会话蒸馏器配对，并通过同源接口完整读取会话目录和消息。",
+  "permissions": ["storage", "tabs", "scripting"],
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*", "https://chatgpt.com/*", "https://chat.openai.com/*", "https://chat.deepseek.com/*", "https://gemini.google.com/*", "https://www.doubao.com/*", "https://doubao.com/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "连接能力包", "default_popup": "popup.html" },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*", "https://chat.deepseek.com/*", "https://gemini.google.com/*", "https://www.doubao.com/*", "https://doubao.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

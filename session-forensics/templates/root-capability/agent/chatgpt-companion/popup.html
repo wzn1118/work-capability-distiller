@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>连接能力包</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <main>
+    <p class="kicker">本机网页连接</p>
+    <h1>网页聊天记录伴侣</h1>
+    <p class="summary">安装扩展后，首次点击这里即可自动找到当前打开的本机工作台并完成配对。以后回到工作台选择平台、读取历史目录或导入完整对话。</p>
+    <section class="auto-pair-card" aria-labelledby="auto-pair-title">
+      <strong id="auto-pair-title">自动连接当前工作台</strong>
+      <span>自动读取本机地址和配对信息，不需要手工抄写。</span>
+      <button id="auto-pair" type="button">自动发现并连接</button>
+    </section>
+    <label>默认网页平台<select id="platform"><option value="chatgpt">ChatGPT</option><option value="deepseek">DeepSeek</option><option value="gemini">Gemini</option><option value="doubao">豆包</option></select></label>
+    <button id="open-platform" class="secondary" type="button">打开所选网页平台</button>
+    <button id="disconnect" class="quiet" type="button">断开连接</button>
+    <p id="state" role="status">正在检查连接状态...</p>
+    <details class="manual-pairing">
+      <summary>自动发现失败时，使用备用连接信息</summary>
+      <label>独立 Agent 地址<input id="agent-url" type="url" value="http://127.0.0.1:8890" spellcheck="false"></label>
+      <label>六位配对码<input id="pairing-code" inputmode="numeric" maxlength="6" placeholder="在工作台页面查看"></label>
+      <button id="pair" class="secondary" type="button">使用备用信息连接</button>
+    </details>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+.creator-performance-origin > span {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 62%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.persona-kicker {
+  min-width: 0;
+}
+
+.profile-state {
+  min-width: 0;
+  max-width: min(46vw, 420px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .creator-performance-origin > span {
+    max-width: 100%;
+  }
+}

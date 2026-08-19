@@ -1,0 +1,23 @@
+diff --git a/scripts/media/downloader.js b/scripts/media/downloader.js
+index 0c46261..710b7eb 100644
+--- a/scripts/media/downloader.js
++++ b/scripts/media/downloader.js
+@@ -2,7 +2,7 @@ import fs from "node:fs";
+ import fsp from "node:fs/promises";
+ import path from "node:path";
+ import { Readable } from "node:stream";
+-import { finished } from "node:stream/promises";
++import { pipeline } from "node:stream/promises";
+
+ import { ProcessingError, normalizeError, sanitizeCandidateFailure } from "../core/errors.js";
+ import { QUALITY_SELECTION_VERSION } from "../core/policies.js";
+@@ -119,8 +119,7 @@ async function downloadSingleStream(stream, mediaKey, suffix, outputDir, timeout
+     }
+
+     const output = fs.createWriteStream(partialPath, { flags: "wx" });
+-    const readable = Readable.fromWeb(response.body);
+-    await finished(readable.pipe(output));
++    await pipeline(Readable.fromWeb(response.body), output);
+
+     const stat = await fsp.stat(partialPath);
+     const expected = expectedResponseBytes(response);

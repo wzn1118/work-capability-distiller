@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>本地能力执行台</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <span class="brand-mark" aria-hidden="true">能</span>
+        <div>
+          <p class="eyebrow">完整会话根能力包</p>
+          <h1 id="package-name">正在读取能力包</h1>
+        </div>
+      </div>
+      <div class="topbar-status" aria-live="polite">
+        <span id="service-dot" class="status-dot"></span>
+        <span id="service-status">正在连接本地服务</span>
+        <span class="divider"></span>
+        <span id="model-status">模型未检查</span>
+      </div>
+    </header>
+
+    <aside class="sidebar" aria-label="主导航">
+      <nav class="nav-list">
+        <button class="nav-item active" type="button" data-view="execute"><span class="nav-index" aria-hidden="true">01</span><span>任务执行</span></button>
+        <button class="nav-item" type="button" data-view="distillation"><span class="nav-index" aria-hidden="true">02</span><span>会话蒸馏</span></button>
+        <button class="nav-item" type="button" data-view="knowledge"><span class="nav-index" aria-hidden="true">03</span><span>项目知识</span></button>
+        <button class="nav-item" type="button" data-view="features"><span class="nav-index" aria-hidden="true">04</span><span>功能总览</span></button>
+        <button class="nav-item" type="button" data-view="alignment"><span class="nav-index" aria-hidden="true">05</span><span>Codex 对齐</span></button>
+        <button class="nav-item" type="button" data-view="evidence"><span class="nav-index" aria-hidden="true">06</span><span>原对话升级</span></button>
+        <button class="nav-item" type="button" data-view="history"><span class="nav-index" aria-hidden="true">07</span><span>任务记录</span></button>
+        <button class="nav-item" type="button" data-view="guide"><span class="nav-index" aria-hidden="true">08</span><span>完整说明</span></button>
+      </nav>
+      <div class="sidebar-summary">
+        <p class="sidebar-label">当前能力</p>
+        <strong id="tool-count">0 项工具</strong>
+        <span id="source-count">0 条原始记录</span>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <section class="view active" data-view-panel="execute">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">真实执行</p>
+            <h2>开始一项可验证的本地任务</h2>
+            <p id="package-summary" class="page-summary">输入目标后，智能体会在已启用的权限内读取证据、修改文件并完成验证。</p>
+          </div>
+          <button id="refresh-all" class="icon-button" type="button" title="刷新全部状态" aria-label="刷新全部状态">↻</button>
+        </div>
+
+        <section id="work-release-panel" class="work-release-band" aria-labelledby="work-release-title">
+          <div class="work-release-heading">
+            <div><p class="section-kicker">真实工作编译状态</p><h3 id="work-release-title">正在读取数据身份、覆盖率和发布门</h3></div>
+            <span id="work-release-state" class="pill neutral">正在检查</span>
+          </div>
+          <div class="work-release-grid">
+            <div><strong>数据身份</strong><p id="work-identity">正在核对用户目标与实际数据对象。</p></div>
+            <div><strong>指标适用范围</strong><p id="work-coverage">正在计算可发布、受限和阻断指标。</p></div>
+            <div><strong>G0-G9 发布门</strong><p id="work-gates">正在检查输入、证据、复跑、移植和独立执行条件。</p></div>
+          </div>
+          <details class="release-validation-disclosure">
+            <summary>查看原任务回放、留出任务和隔离执行明细</summary>
+            <div id="release-validation-list" class="release-validation-list"><p class="muted">正在读取发布验证证据。</p></div>
+          </details>
+        </section>
+
+        <details id="coverage-gap-panel" class="coverage-gap-disclosure">
+          <summary class="coverage-gap-summary">
+            <span><span class="section-kicker">数据质量闭环</span><strong>缺口处理与语义评估</strong><small id="coverage-gap-summary-text">正在读取需要补充、锁定或排除的数据范围</small></span>
+            <span id="coverage-gap-count" class="pill neutral">正在检查</span>
+          </summary>
+          <div class="coverage-gap-body">
+            <section aria-labelledby="coverage-gap-title">
+              <div class="coverage-gap-heading"><div><h3 id="coverage-gap-title">需要你决定的数据缺口</h3><p>每个缺口都可以直接选择处理方式，状态会保存在本机，不会改写能力包原件。</p></div></div>
+              <div id="coverage-gap-list" class="coverage-gap-list"><p class="muted">正在读取缺口登记表。</p></div>
+            </section>
+            <section class="semantic-evaluation-summary" aria-labelledby="semantic-evaluation-title">
+              <div><p class="section-kicker">语义结论质量</p><h3 id="semantic-evaluation-title">候选、人工确认、再统计</h3></div>
+              <p id="semantic-evaluation-detail">正在读取语义评估计划。</p>
+            </section>
+          </div>
+        </details>
+
+        <details id="execution-setup" class="setup-band setup-disclosure" aria-labelledby="setup-title">
+          <summary class="setup-summary">
+            <span class="setup-summary-copy"><span class="section-kicker">执行环境</span><strong id="setup-title">模型、工作区与权限</strong><small>连接模型并选择可操作的本地项目目录</small></span>
+            <span id="setup-state" class="pill neutral">尚未完成检查</span>
+          </summary>
+          <div class="setup-disclosure-body">
+            <div class="section-title-row setup-body-heading">
+              <div><p class="section-kicker">准备明细</p><h3>配置执行环境</h3></div>
+              <p>模型配置和项目权限均可随时调整；密钥只保存在当前进程内存。</p>
+            </div>
+            <div class="setup-grid">
+            <form id="model-form" class="setup-form">
+              <div class="form-heading"><strong>人工智能模型</strong><span>密钥只保存在当前进程内存</span></div>
+              <section class="installation-card" aria-labelledby="installation-title">
+                <div class="installation-heading"><div><h4 id="installation-title">安装与启动状态</h4><p>此能力包不依赖当前工作区。解压后即可使用，Windows 用户可双击启动文件。</p></div><span id="installation-state" class="pill neutral">正在检查</span></div>
+                <p id="installation-detail" class="installation-detail" role="status" aria-live="polite">正在读取本机运行条件。</p>
+              </section>
+              <section class="codex-link" aria-labelledby="codex-link-title">
+                <div class="codex-link-heading"><div><h4 id="codex-link-title">自动连接当前 Codex</h4><p>自动读取本机 Codex 正在使用的模型接口、模型名称和接口类型；不会在页面显示或写入密钥。</p></div><span id="codex-link-state" class="pill neutral">正在检查</span></div>
+                <p id="codex-link-detail" class="codex-link-detail" role="status" aria-live="polite">正在检查当前 Codex 本机配置。</p>
+                <button id="connect-codex" type="button" class="secondary-button">自动连接当前 Codex</button>
+              </section>
+              <section class="local-conversation-card" aria-labelledby="local-conversation-title">
+                <div class="local-conversation-heading"><div><h4 id="local-conversation-title">自动加载本机 Codex 对话</h4><p>自动建立全量语义索引，按会话标题、实际工具、项目和任务链搜索。可多选相关会话并加载为当前任务上下文。</p></div><span id="local-session-state" class="pill neutral">正在搜索</span></div>
+                <label class="local-session-filter-label" for="local-session-filter">搜索全部本机对话<input id="local-session-filter" type="search" placeholder="输入语义标题、项目、工具、编号或关键词" autocomplete="off"></label>
+                <select id="local-session-list" class="local-session-list" multiple size="7" aria-describedby="local-session-detail"><option>正在搜索本机 Codex 对话...</option></select>
+                <details id="local-task-chain-browser" class="local-task-chain-browser" open>
+                  <summary><span>完整任务链目录</span><small>按一条完整演进链选择相关会话</small></summary>
+                  <div class="local-task-chain-body">
+                    <label class="local-session-filter-label" for="local-task-chain-filter">搜索全部任务链<input id="local-task-chain-filter" type="search" placeholder="输入目标、项目、领域或工具" autocomplete="off"></label>
+                    <p id="local-task-chain-count" class="local-session-detail">正在汇总完整任务链目录。</p>
+                    <div id="local-task-chain-list" class="local-task-chain-list" aria-live="polite"></div>
+                    <button id="load-more-local-task-chains" type="button" class="secondary-button" hidden>加载更多任务链</button>
+                  </div>
+                </details>
+                <div class="form-actions"><button id="refresh-local-sessions" type="button" class="secondary-button">重新建立语义索引</button><button id="load-more-local-sessions" type="button" class="secondary-button" hidden>加载更多会话</button><button id="load-local-sessions" type="button" class="secondary-button" disabled>加载所选对话到任务</button></div>
+                <p id="local-session-detail" class="local-session-detail" role="status" aria-live="polite">会话内容只在本机读取。输入框会显示会话索引；真正开始执行时，Agent 会自动读取全部已选会话的最新阶段证据。</p>
+              </section>
+              <label>接口地址<input id="base-url" name="baseUrl" type="url" autocomplete="url" required></label>
+              <label>模型名称<div class="inline-control"><input id="model-name" name="model" type="text" list="model-list" required><button id="load-models" type="button" class="secondary-button">读取全部模型</button></div></label>
+              <datalist id="model-list"></datalist>
+              <section class="model-catalog" aria-labelledby="model-catalog-title">
+                <div class="model-catalog-heading">
+                  <div><h4 id="model-catalog-title">接口模型全量列表</h4><p>完整显示接口返回的所有模型。搜索只筛选显示，点击名称即可填入模型名称。</p></div>
+                  <strong id="model-catalog-count">尚未读取</strong>
+                </div>
+                <label class="model-filter-label" for="model-filter">搜索已读取的模型<input id="model-filter" type="search" placeholder="输入模型名称筛选" autocomplete="off" disabled></label>
+                <p id="model-catalog-state" class="model-catalog-state" role="status" aria-live="polite">保存接口设置后会自动读取；也可以点击“读取全部模型”。</p>
+                <div id="model-catalog" class="model-catalog-list" aria-live="polite"><p class="muted">尚未读取接口模型。</p></div>
+              </section>
+              <label>接口密钥<input id="api-key" name="apiKey" type="password" autocomplete="off" placeholder="已有密钥时可留空"></label>
+              <div class="form-actions"><button class="primary-button" type="submit">保存并测试模型</button><span id="model-form-state" class="form-state"></span></div>
+            </form>
+
+            <form id="workspace-form" class="setup-form">
+              <div class="form-heading"><strong>本地工作区</strong><span>所有文件操作限制在此目录</span></div>
+              <label for="workspace-root">项目文件夹</label>
+              <div class="workspace-picker-control"><input id="workspace-root" name="root" type="text" readonly placeholder="点击右侧按钮选择项目文件夹" autocomplete="off" required><button id="pick-workspace-root" class="secondary-button" type="button">选择项目文件夹</button></div>
+              <p class="workspace-picker-note">选择后再保存工作区权限。此智能体只会在所选文件夹内读取、执行命令或修改文件。</p>
+              <div class="permission-grid">
+                <label class="permission-toggle"><input id="allow-write" name="allowWrite" type="checkbox"><span><strong>允许修改文件</strong><small>创建、覆盖、替换、移动</small></span></label>
+                <label class="permission-toggle"><input id="allow-command" name="allowCommand" type="checkbox"><span><strong>允许执行命令</strong><small>构建、测试、脚本和验证</small></span></label>
+                <label class="permission-toggle"><input id="allow-git-write" name="allowGitWrite" type="checkbox"><span><strong>允许 Git 提交</strong><small>只创建本地提交，不会推送远程</small></span></label>
+                <label class="permission-toggle"><input id="allow-network" name="allowNetwork" type="checkbox"><span><strong>允许联网取证</strong><small>读取公开网页，不携带密钥或项目文件</small></span></label>
+                <label class="permission-toggle danger"><input id="allow-delete" name="allowDelete" type="checkbox"><span><strong>允许删除路径</strong><small>删除前自动保存恢复点</small></span></label>
+              </div>
+              <div class="form-actions"><button class="primary-button" type="submit">保存工作区权限</button><span id="workspace-form-state" class="form-state"></span></div>
+            </form>
+            </div>
+          </div>
+        </details>
+
+        <section class="task-band" aria-labelledby="task-title">
+          <div class="section-title-row">
+            <div><p class="section-kicker">新任务</p><h3 id="task-title">告诉它要完成什么</h3></div>
+            <div id="mode-switch" class="segmented" role="group" aria-label="执行模式">
+              <button type="button" class="active" data-mode="提取并改进原对话">提取并改进</button>
+              <button type="button" data-mode="按原对话复现">按原对话复现</button>
+              <button type="button" data-mode="自由本地执行">自由执行</button>
+            </div>
+          </div>
+          <div class="task-brief">
+            <div><strong>执行方式</strong><span>先读取原会话的最新纠正和已选工作区，再按权限调用工具、记录变更并运行验收。</span></div>
+            <button id="open-execution-setup" class="secondary-button" type="button">准备执行环境</button>
+          </div>
+          <form id="task-form">
+            <label class="sr-only" for="task-input">任务内容</label>
+            <textarea id="task-input" rows="6" placeholder="例如：检查当前项目，结合原对话最新要求，把独立 UI、功能说明、本地文件修改和命令验证全部升级到可交付状态。" required></textarea>
+            <div class="task-actions">
+              <div class="task-readiness"><span id="task-ready-dot" class="status-dot"></span><span id="task-readiness">请先完成模型和工作区设置</span></div>
+              <button id="start-task" class="command-button" type="submit"><span aria-hidden="true">▶</span>开始真实执行</button>
+              <button id="stop-task" class="secondary-button danger-text" type="button" disabled><span aria-hidden="true">■</span>停止</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="autonomy-status" class="autonomy-status" aria-live="polite">
+          <div class="autonomy-status-heading"><strong>模型自动执行状态</strong><span id="autonomy-state" class="pill running">待开始</span></div>
+          <p id="autonomy-summary">开始任务后，模型会在你已经开启的权限范围内自行取证、读取项目、修改文件并执行命令验证；每一步都会留在下方记录中。</p>
+          <div class="autonomy-metrics" aria-label="自动执行统计">
+            <span><strong id="autonomy-tool-count">0</strong>工具调用</span>
+            <span><strong id="autonomy-write-count">0</strong>写入操作</span>
+            <span><strong id="autonomy-command-count">0</strong>命令与验证</span>
+            <span><strong id="autonomy-checkpoint-count">0</strong>恢复点</span>
+          </div>
+        </section>
+
+        <section id="run-panel" class="run-band hidden" aria-live="polite">
+          <div class="run-header">
+            <div><p class="section-kicker">当前任务</p><h3 id="run-title">任务执行中</h3></div>
+            <span id="run-status" class="pill running">等待</span>
+          </div>
+          <div class="phase-track" aria-label="执行阶段">
+            <span data-phase="取证">1 取证</span><span data-phase="规划">2 规划</span><span data-phase="执行">3 执行</span><span data-phase="验证">4 验证</span><span data-phase="完成">5 完成</span>
+          </div>
+          <div class="run-layout">
+            <div class="timeline-column">
+              <div class="subheading"><h4>实时执行记录</h4><span id="event-count">0 条</span></div>
+              <div id="event-stream" class="event-stream"></div>
+            </div>
+            <div class="result-column">
+              <div class="result-block"><div class="subheading"><h4>最终结果</h4></div><div id="run-result" class="result-content muted">任务结束后显示中文结果。</div></div>
+              <div class="result-block"><div class="subheading"><h4>文件变更</h4><span id="change-count">0 项</span></div><div id="change-list" class="compact-list muted">尚无变更。</div></div>
+              <div class="result-block"><div class="subheading"><h4>命令与验收</h4><span id="verification-state">尚未运行</span></div><div id="verification-list" class="compact-list muted">尚无命令记录。</div></div>
+              <section id="held-out-submit" class="result-block held-out-submit hidden" aria-labelledby="held-out-submit-title">
+                <div class="subheading"><h4 id="held-out-submit-title">把这次任务加入独立验收</h4><span id="held-out-submit-state" class="pill neutral">待提交</span></div>
+                <p id="held-out-submit-help" class="muted">这项任务已经完成，可以作为未参与蒸馏的新任务，检验能力包是否真的能复用。</p>
+                <div id="held-out-capabilities" class="held-out-capabilities"></div>
+                <button id="submit-held-out" type="button" class="secondary-button">提交本次任务作为 G7 验收</button>
+              </section>
+              <div class="result-block"><div class="subheading"><h4>受管理长期进程</h4><span id="process-count">0 个</span></div><div id="process-list" class="compact-list muted">尚无长期进程。</div></div>
+              <div class="result-block"><div class="subheading"><h4>恢复点</h4><span id="checkpoint-count">0 个</span></div><div id="checkpoint-list" class="compact-list muted">尚无恢复点。</div></div>
+              <form id="continue-form" class="continue-form hidden"><label>继续要求<input id="continue-input" type="text" placeholder="补充要求或让任务从失败处继续"></label><button class="secondary-button" type="submit">继续执行</button></form>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" data-view-panel="distillation">
+        <div class="page-heading"><div><p class="eyebrow">会话专属能力</p><h2>通用 Codex 底座之上的 P 阶段蒸馏</h2><p id="distillation-summary" class="page-summary">正在读取完整会话中每个需求阶段的目标、做法、交付物和证据。</p></div></div>
+        <section class="distillation-intro plain-section"><div><p class="section-kicker">如何理解</p><h3>通用工具不会取代专属任务</h3><p id="universal-core-summary" class="page-summary">完整工具目录负责执行；下面的 P 阶段说明这个能力包为什么而执行、如何执行、应交付什么。</p></div><a class="secondary-button" href="/api/artifact?name=distillation" target="_blank" rel="noreferrer">打开完整蒸馏说明</a></section>
+        <section class="plain-section source-evidence-section"><div class="section-title-row"><div><p class="section-kicker">联合证据范围</p><h3>本能力包实际理解了哪些会话和项目</h3><p class="page-summary">这里列出蒸馏输入的每个会话标题、来源文件、记录量，以及每条会话的项目归属、项目当前文件、原始版本、修改差异、生成产物和跨证据因果关系。</p></div><div class="source-evidence-actions"><a class="secondary-button" href="/api/artifact?name=sourceSessions" target="_blank" rel="noreferrer">打开会话清单</a><a class="secondary-button" href="/api/artifact?name=projectPortfolioMarkdown" target="_blank" rel="noreferrer">打开项目组合</a><a class="secondary-button" href="/api/artifact?name=projectEvidenceMarkdown" target="_blank" rel="noreferrer">打开项目证据</a><a class="secondary-button" href="/api/artifact?name=projectUnderstandingMarkdown" target="_blank" rel="noreferrer">打开项目理解</a></div></div><div id="source-session-list" class="source-session-list"><p class="muted">正在读取联合会话来源...</p></div><div id="project-portfolio" class="agent-project-portfolio"><p class="muted">正在识别多会话项目归属...</p></div><div id="project-understanding" class="project-understanding"><p class="muted">正在读取项目深度理解...</p></div><div id="project-evidence-summary" class="project-evidence-summary"><p class="muted">正在读取项目证据...</p></div><div id="project-file-groups" class="project-file-groups"></div></section>
+        <section class="plain-section expertise-section"><div class="section-title-row"><div><p class="section-kicker">本会话专属结果</p><h3>从原会话提炼出的专长</h3><p class="page-summary">每一行都对应本会话的具体目标、适用时机和实际执行路径；不是通用任务模板。</p></div></div><div class="expertise-table-wrap"><table class="expertise-table"><thead><tr><th>专长</th><th>什么时候使用</th><th>执行方法</th></tr></thead><tbody id="distilled-expertise"><tr><td colspan="3" class="muted">正在读取会话专长...</td></tr></tbody></table></div></section>
+        <section class="plain-section"><div class="section-title-row"><div><p class="section-kicker">完整通用能力</p><h3>通用 Codex 执行工具清单</h3><p class="page-summary">每项都显示工具代码、中文名称、直白用途、开放条件和当前状态。</p></div></div><div id="universal-tool-list" class="feature-groups" aria-live="polite"></div></section>
+        <div id="specialization-list" class="specialization-list" aria-live="polite"></div>
+      </section>
+
+      <section class="view" data-view-panel="knowledge">
+        <div class="page-heading"><div><p class="eyebrow">项目级蒸馏 V4.1</p><h2>从多条会话、完整文件、Git 和产物中形成可追溯理解</h2><p class="page-summary">主动读取关联项目：每个阶段保留来源会话，每个文件核对原始与当前指纹，每项改动计算依赖影响，每个产物标明复现条件。</p></div><a class="secondary-button" href="/api/artifact?name=projectKnowledgeV4Markdown" target="_blank" rel="noreferrer">打开完整知识说明</a></div>
+        <div id="knowledge-v4-metrics" class="metric-strip"><p class="muted">正在读取 V4 项目知识...</p></div>
+        <section class="plain-section knowledge-toolbar"><div><p class="section-kicker">全量浏览</p><h3>搜索当前能力包的全部项目知识</h3><p class="page-summary">下方列表默认完整展示。输入关键词可同时筛选阶段、文件版本、产物和主动读取记录。</p></div><label>筛选关键词<input id="knowledge-filter" type="search" placeholder="输入会话目标、文件、模块、产物或命令"></label></section>
+        <section class="plain-section knowledge-section"><div class="section-title-row"><div><p class="section-kicker">跨会话归并</p><h3>语义阶段与实际目标</h3><p class="page-summary">相同目标会归入同一个 P 阶段，后续纠正和每条来源轨迹仍然保留。</p></div><a class="secondary-button" href="/api/artifact?name=semanticStages" target="_blank" rel="noreferrer">打开结构数据</a></div><div id="knowledge-v4-stages" class="knowledge-stage-list"></div></section>
+        <section class="plain-section knowledge-section"><div class="section-title-row"><div><p class="section-kicker">跨会话时间轴</p><h3>要求、工具、命令与文件动作如何连续发生</h3></div><a class="secondary-button" href="/api/artifact?name=crossSessionTimeline" target="_blank" rel="noreferrer">打开全量时间线</a></div><div id="knowledge-v4-timeline" class="knowledge-table-wrap"></div></section>
+        <section class="plain-section knowledge-section"><div class="section-title-row"><div><p class="section-kicker">项目结构</p><h3>项目目的、模块、入口、规则与能力</h3></div><a class="secondary-button" href="/api/artifact?name=projectModel" target="_blank" rel="noreferrer">打开项目模型</a></div><div id="knowledge-v4-model"></div></section>
+        <section class="plain-section knowledge-section"><div class="section-title-row"><div><p class="section-kicker">真实文件变更</p><h3>Git 原始版本、当前指纹、涉及会话与变更判断</h3></div><a class="secondary-button" href="/api/artifact?name=fileChangeMatrix" target="_blank" rel="noreferrer">打开变更矩阵</a></div><div id="knowledge-v4-changes" class="knowledge-table-wrap"></div></section>
+        <section class="plain-section knowledge-section"><div class="section-title-row"><div><p class="section-kicker">影响范围</p><h3>变更文件会影响哪些直接和传递依赖方</h3></div><a class="secondary-button" href="/api/artifact?name=dependencyImpact" target="_blank" rel="noreferrer">打开依赖影响</a></div><div id="knowledge-v4-impact" class="knowledge-table-wrap"></div></section>
+        <section class="plain-section knowledge-section"><div class="section-title-row"><div><p class="section-kicker">版本事实</p><h3>文件原始版本、会话操作与当前版本</h3><p class="page-summary">“仅元数据”不会被说成已经读过正文；父版本编号用于追溯演化链。</p></div><a class="secondary-button" href="/api/artifact?name=fileVersions" target="_blank" rel="noreferrer">打开全量版本账本</a></div><div id="knowledge-v4-versions" class="knowledge-table-wrap"></div></section>
+        <section class="plain-section knowledge-section"><div class="section-title-row"><div><p class="section-kicker">产物来源</p><h3>生成文件、输入依赖、命令与可信度</h3></div><a class="secondary-button" href="/api/artifact?name=artifactLineage" target="_blank" rel="noreferrer">打开产物血缘</a></div><div id="knowledge-v4-lineage" class="knowledge-table-wrap"></div></section>
+        <section class="plain-section knowledge-section"><div class="section-title-row"><div><p class="section-kicker">复现条件</p><h3>哪些产物已经具备输入、生成命令、验证命令和当前指纹</h3></div><a class="secondary-button" href="/api/artifact?name=artifactReproducibility" target="_blank" rel="noreferrer">打开复现表</a></div><div id="knowledge-v4-reproduction" class="knowledge-table-wrap"></div></section>
+        <section class="plain-section knowledge-section"><div class="section-title-row"><div><p class="section-kicker">最新要求优先</p><h3>后续纠正、覆盖关系与证据缺口</h3></div><a class="secondary-button" href="/api/artifact?name=decisionConflicts" target="_blank" rel="noreferrer">打开决策清单</a></div><div id="knowledge-v4-decisions" class="knowledge-decision-list"></div></section>
+        <section class="plain-section knowledge-section"><div class="section-title-row"><div><p class="section-kicker">诚实边界</p><h3>项目快照、待补证问题与主动读取记录</h3><p class="page-summary">明确显示已读全文、完整指纹、仅有元数据和仍待验证的内容，支持后续增量刷新。</p></div><div class="source-evidence-actions"><a class="secondary-button" href="/api/artifact?name=projectSnapshot" target="_blank" rel="noreferrer">打开项目快照</a><a class="secondary-button" href="/api/artifact?name=openEvidenceQuestions" target="_blank" rel="noreferrer">打开待补证问题</a><a class="secondary-button" href="/api/artifact?name=activeReadLog" target="_blank" rel="noreferrer">打开读取记录</a></div></div><div id="knowledge-v4-coverage"></div><div id="knowledge-v4-open-questions" class="knowledge-decision-list"></div><div id="knowledge-v4-read-log" class="knowledge-table-wrap"></div></section>
+      </section>
+
+      <section class="view" data-view-panel="features">
+        <div class="page-heading"><div><p class="eyebrow">能力总览</p><h2>这个能力包具体能做什么</h2><p class="page-summary">每一项功能都标出用途、权限和当前可用状态。</p></div></div>
+        <div id="capability-stats" class="metric-strip"></div>
+        <div id="feature-groups" class="feature-groups"></div>
+      </section>
+
+      <section class="view" data-view-panel="alignment">
+        <div class="page-heading"><div><p class="eyebrow">Codex 工程能力对齐</p><h2>本能力包已经实现什么，还取决于什么</h2><p class="page-summary">不夸大能力：每个领域都标明当前状态、直白用途和实际依赖。</p></div></div>
+        <section class="plain-section"><div class="section-title-row"><div><p class="section-kicker">能力闭环</p><h3 id="alignment-title">正在读取对齐图</h3></div></div><p id="alignment-summary" class="page-summary"></p><div id="alignment-groups" class="alignment-groups"></div></section>
+      </section>
+
+      <section class="view" data-view-panel="evidence">
+        <div class="page-heading"><div><p class="eyebrow">原对话升级</p><h2>查看提取内容、后续纠正和改进流程</h2><p class="page-summary">这里展示能力从哪里来，以及新版执行时会优先遵守什么。</p></div></div>
+        <div id="evidence-stats" class="metric-strip"></div>
+        <div class="evidence-layout">
+          <div class="evidence-main">
+            <section class="plain-section"><div class="section-title-row"><div><p class="section-kicker">优先规则</p><h3>最新用户纠正</h3></div></div><div id="correction-list" class="numbered-list"></div></section>
+            <section class="plain-section"><div class="section-title-row"><div><p class="section-kicker">新版方法</p><h3>完整执行流程</h3></div></div><div id="workflow-list" class="workflow-list"></div></section>
+          </div>
+          <aside class="evidence-search">
+            <h3>搜索完整原对话</h3>
+            <form id="conversation-search-form"><label>关键词<input id="conversation-query" type="search" placeholder="输入功能、工具、文件或用户原话" required></label><button class="primary-button" type="submit">搜索证据</button></form>
+            <div id="conversation-results" class="search-results muted">输入关键词后显示原消息和工具记录。</div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" data-view-panel="history">
+        <div class="page-heading"><div><p class="eyebrow">持久记录</p><h2>任务、工具、文件和验收记录</h2><p class="page-summary">任务失败或服务重启后仍可查看，并能从保存的状态继续。</p></div><button id="refresh-history" class="secondary-button" type="button">刷新记录</button></div>
+        <div id="history-list" class="history-list"></div>
+      </section>
+
+      <section class="view" data-view-panel="guide">
+        <div class="page-heading"><div><p class="eyebrow">完整说明</p><h2>能力、边界、产物和启动方式</h2><p class="page-summary">所有说明均针对当前会话生成，不是通用占位文档。</p></div></div>
+        <div class="guide-layout">
+          <section class="guide-section"><h3>直白能力说明</h3><p id="guide-summary"></p><div id="principle-list" class="bullet-list"></div></section>
+          <section class="guide-section"><h3>权限与限制</h3><div id="limit-list" class="bullet-list"></div></section>
+          <section class="guide-section full"><h3>交付文件</h3><div class="artifact-links">
+            <a href="/api/artifact?name=packageGuide" target="_blank" rel="noreferrer">能力包完整说明</a>
+            <a href="/api/artifact?name=readme" target="_blank" rel="noreferrer">独立 Agent 说明</a>
+            <a href="/api/artifact?name=contract" target="_blank" rel="noreferrer">能力契约</a>
+            <a href="/api/artifact?name=distillation" target="_blank" rel="noreferrer">会话能力蒸馏说明</a>
+            <a href="/api/artifact?name=distillationJson" target="_blank" rel="noreferrer">会话蒸馏结构数据</a>
+            <a href="/api/artifact?name=projectUnderstandingMarkdown" target="_blank" rel="noreferrer">项目深度理解说明</a>
+            <a href="/api/artifact?name=projectUnderstanding" target="_blank" rel="noreferrer">项目深度理解数据</a>
+            <a href="/api/artifact?name=projectKnowledgeV4Markdown" target="_blank" rel="noreferrer">V4 多会话项目知识说明</a>
+            <a href="/api/artifact?name=projectKnowledgeV4" target="_blank" rel="noreferrer">V4 项目知识完整数据</a>
+            <a href="/api/artifact?name=semanticStages" target="_blank" rel="noreferrer">跨会话语义阶段</a>
+            <a href="/api/artifact?name=evidenceLedger" target="_blank" rel="noreferrer">逐条证据账本</a>
+            <a href="/api/artifact?name=projectModel" target="_blank" rel="noreferrer">项目模型</a>
+            <a href="/api/artifact?name=projectGraph" target="_blank" rel="noreferrer">项目知识图</a>
+            <a href="/api/artifact?name=fileVersions" target="_blank" rel="noreferrer">文件版本链</a>
+            <a href="/api/artifact?name=artifactLineage" target="_blank" rel="noreferrer">生成产物血缘</a>
+            <a href="/api/artifact?name=decisionConflicts" target="_blank" rel="noreferrer">后续决策与冲突</a>
+            <a href="/api/artifact?name=coverage" target="_blank" rel="noreferrer">读取覆盖率</a>
+            <a href="/api/artifact?name=activeReadLog" target="_blank" rel="noreferrer">主动读取记录</a>
+            <a href="/api/artifact?name=extraction" target="_blank" rel="noreferrer">完整会话提取</a>
+            <a href="/api/artifact?name=blueprint" target="_blank" rel="noreferrer">升级工作流</a>
+            <a href="/api/artifact?name=manifest" target="_blank" rel="noreferrer">完整性清单</a>
+          </div></section>
+          <section class="guide-section full"><h3>验收标准</h3><div id="acceptance-list" class="acceptance-list"></div></section>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

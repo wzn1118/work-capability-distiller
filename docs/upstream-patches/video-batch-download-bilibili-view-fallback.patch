@@ -1,0 +1,82 @@
+diff --git a/scripts/platforms/bilibili.js b/scripts/platforms/bilibili.js
+index 84d6d48..e2ae78f 100644
+--- a/scripts/platforms/bilibili.js
++++ b/scripts/platforms/bilibili.js
+@@ -134,10 +134,26 @@ export class BilibiliParser extends PlatformParser {
+         throw permanentError;
+       }
+
+-      // B站 view API 未登录时只返回 { judge: ... }，缺少核心字段
+-      // 从页面 __INITIAL_STATE__ 兜底提取元数据
++      // Some Bilibili page navigations receive a risk-control HTML response even
++      // though the same browser context can still call the public view API.
++      // Prefer that structured API fallback before relying on page state.
+       const hasFullMeta = viewApiData && viewApiData.bvid && viewApiData.title;
+       if (!hasFullMeta) {
++        const viewFallback = await this._fetchViewFallback(page, url);
++        if (viewFallback?.code === 0 && viewFallback.data) {
++          viewApiData = { ...(viewApiData ?? {}), ...viewFallback.data };
++        } else if (viewFallback?.code != null) {
++          permanentError = preferPlatformError(
++            permanentError,
++            classifyBilibiliViewApiError(viewFallback.code),
++          );
++        }
++      }
++
++      // When both network capture and the public API lack a complete response,
++      // use the page state as the final metadata fallback.
++      const hasFullMetaAfterApiFallback = viewApiData && viewApiData.bvid && viewApiData.title;
++      if (!hasFullMetaAfterApiFallback) {
+         const pageState = await page.evaluate(() => {
+           const s = window.__INITIAL_STATE__;
+           if (!s || !s.videoData) return null;
+@@ -305,6 +321,20 @@ export class BilibiliParser extends PlatformParser {
+     }, requestUrl).catch(() => null);
+   }
+
++  async _fetchViewFallback(page, url) {
++    const videoId = url.match(/\/video\/(BV[\w]+|av\d+)/i)?.[1] ?? null;
++    if (!videoId) return null;
++
++    const params = new URLSearchParams();
++    if (/^av\d+$/i.test(videoId)) params.set("aid", videoId.slice(2));
++    else params.set("bvid", videoId);
++
++    return this._fetchJsonFromPage(
++      page,
++      `https://api.bilibili.com/x/web-interface/view?${params.toString()}`,
++    );
++  }
++
+   async _fetchPlayurlFallback(page, viewApiData, url) {
+     const bvid = viewApiData?.bvid ?? url.match(/(BV[\w]+)/i)?.[1] ?? null;
+     const aid = viewApiData?.aid ?? null;
+diff --git a/test/bilibili.test.js b/test/bilibili.test.js
+index 53de166..77c245d 100644
+--- a/test/bilibili.test.js
++++ b/test/bilibili.test.js
+@@ -77,6 +77,23 @@ test("Bilibili fallback requests the highest anonymous quality intent", async ()
+   assert.equal(requests[0].searchParams.get("fnval"), "4048");
+ });
+
++test("Bilibili view fallback resolves BV and av URLs through the page API", async () => {
++  const parser = new BilibiliParser();
++  const requests = [];
++  parser._fetchJsonFromPage = async (_page, requestUrl) => {
++    requests.push(new URL(requestUrl));
++    return { code: 0, data: { title: "fixture" } };
++  };
++
++  await parser._fetchViewFallback({}, "https://www.bilibili.com/video/BV1fixture");
++  await parser._fetchViewFallback({}, "https://www.bilibili.com/video/av12345");
++
++  assert.equal(requests.length, 2);
++  assert.equal(requests[0].pathname, "/x/web-interface/view");
++  assert.equal(requests[0].searchParams.get("bvid"), "BV1fixture");
++  assert.equal(requests[1].searchParams.get("aid"), "12345");
++});
++
+ test("Bilibili legacy muxed streams remain selectable and auditable", () => {
+   const parser = new BilibiliParser();
+   const fixture = {

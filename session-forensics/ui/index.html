@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="选择本机工作会话，自动理解项目与文件，生成有证据、可执行、可安装的专属能力包" />
+    <title>零代码工作能力蒸馏器</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23096b60'/%3E%3Cpath d='M18 17h28v7H35v23h-7V24H18z' fill='white'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body data-workbench-view="local">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">蒸馏</span>
+        <div><strong>零代码工作能力蒸馏器</strong><span>选择工作，系统理解，一键生成可执行能力包</span></div>
+      </div>
+      <div id="connection" class="connection" data-state="checking">正在检查连接</div>
+    </header>
+    <section id="child-page-bar" class="child-page-bar" aria-label="子页面导航" hidden>
+      <a class="child-page-back" href="/" aria-label="返回零代码工作能力蒸馏器主页面">← 返回主工作台</a>
+      <div class="child-page-context">
+        <span id="child-page-breadcrumb">主工作台 / 能力包</span>
+        <strong id="child-page-title">正在打开能力包</strong>
+        <p id="child-page-description">正在整理这份能力包的说明和可操作入口，请稍候。</p>
+      </div>
+      <output id="child-page-status" class="child-page-status">正在读取</output>
+      <button id="child-page-primary" class="child-page-primary" type="button" hidden>开始使用</button>
+    </section>
+    <main class="shell">
+      <aside class="workbench-sidebar" aria-label="主蒸馏台导航">
+        <div class="workbench-sidebar-heading">
+          <span class="sidebar-product-mark" aria-hidden="true">能</span>
+          <div><strong>主蒸馏台</strong><span>一次只处理一件事</span></div>
+        </div>
+        <nav class="workbench-navigation" aria-label="蒸馏流程">
+          <button type="button" class="active" data-workbench-nav="local" aria-current="page">
+            <span class="workbench-nav-index">01</span>
+            <span class="workbench-nav-copy"><strong>本机对话</strong><small>选择并蒸馏 Codex 会话</small></span>
+            <output id="nav-local-count">0</output>
+          </button>
+          <button type="button" data-workbench-nav="web">
+            <span class="workbench-nav-index">02</span>
+            <span class="workbench-nav-copy"><strong>网页端对话</strong><small>读取并蒸馏网页聊天</small></span>
+            <output id="nav-web-count">0</output>
+          </button>
+          <button type="button" data-workbench-nav="results">
+            <span class="workbench-nav-index">03</span>
+            <span class="workbench-nav-copy"><strong>结果</strong><small>建议、能力包与证据</small></span>
+            <output id="nav-result-status">待生成</output>
+          </button>
+        </nav>
+        <div class="workbench-sidebar-footer">
+          <button id="open-workbench-tools" type="button" class="sidebar-tools-button">
+            <span aria-hidden="true">⚙</span>
+            <span><strong>更多设置与换机</strong><small>补充来源、交付项和安装包</small></span>
+          </button>
+          <p>主流程只保留选择、蒸馏和查看结果。</p>
+        </div>
+      </aside>
+      <aside class="control-panel">
+        <div class="panel-heading">
+          <div><span id="intake-view-kicker" class="eyebrow">本机对话</span><h1 id="intake-view-title" tabindex="-1">选择并蒸馏本机会话</h1><p id="intake-view-description" class="panel-description">从真实标题中选择一条或多条 Codex 会话，确认范围后开始蒸馏。</p></div>
+          <button id="refresh" class="icon-button" title="重新扫描本机会话" aria-label="重新扫描本机会话">↻</button>
+        </div>
+        <ol class="guide-steps" aria-label="使用步骤">
+          <li class="active"><span>1</span><strong>选会话</strong></li>
+          <li><span>2</span><strong>看推荐</strong></li>
+          <li><span>3</span><strong>生成并使用</strong></li>
+        </ol>
+        <div class="session-search-box">
+          <label id="session-search-label" for="session-search">搜索本机工作</label>
+          <div class="session-search-controls">
+            <input id="session-search" type="search" placeholder="搜索标题、用户需求、助手回复或工具内容" autocomplete="off" />
+            <button id="clear-session-search" type="button" class="text-button">清空</button>
+          </div>
+          <output id="session-search-status" class="session-search-status" role="status" aria-live="polite">可搜索标题和完整会话内容。</output>
+        </div>
+        <section id="session-search-results" class="session-search-results" aria-labelledby="session-search-results-title" hidden>
+          <div class="session-search-results-heading">
+            <div>
+              <h3 id="session-search-results-title">搜索命中</h3>
+              <p id="session-search-results-summary">输入关键词后，这里会列出正文命中的会话。</p>
+            </div>
+            <label class="session-search-kind-filter" for="session-search-kind"><span>命中类型</span><select id="session-search-kind"><option value="all">全部类型</option><option value="用户消息">用户消息</option><option value="助手回复">助手回复</option><option value="工具调用或结果">工具调用或结果</option><option value="网页工具调用">网页工具调用</option><option value="图片或附件">图片或附件</option><option value="会话内容">其他会话内容</option><option value="标题">标题</option></select></label>
+          </div>
+          <div id="session-search-hit-list" class="session-search-hit-list"></div>
+        </section>
+        <section class="workspace-picker local-intake-only" aria-labelledby="workspace-picker-title">
+          <div class="workspace-picker-heading">
+            <div><span class="eyebrow">可选范围</span><h2 id="workspace-picker-title">按工作区选择全部会话</h2></div>
+            <output id="workspace-selection-count" class="selection-count">0 个</output>
+          </div>
+          <p class="field-note">只有勾选工作区时才会纳入整组会话；如果只处理一条或几条，请直接在下面逐条勾选。</p>
+          <div class="source-catalog-actions" aria-label="工作区批量操作">
+            <button id="select-visible-workspaces" type="button" class="secondary compact-button">全选当前工作区</button>
+            <button id="clear-selected-workspaces" type="button" class="text-button">清空工作区</button>
+          </div>
+          <div id="workspace-catalog" class="workspace-catalog" aria-label="按项目工作区归组的会话"><p class="section-note">正在识别工作区……</p></div>
+          <p id="workspace-selection-summary" class="field-note">系统会依据会话记录中的真实工作目录识别工作区。</p>
+        </section>
+        <section class="session-detail-picker local-intake-only" aria-labelledby="session-detail-title" data-selection-mode="sessions">
+          <div class="session-detail-heading">
+            <div><span class="eyebrow">默认模式 · 不展开工作区</span><h2 id="session-detail-title">单独选择会话</h2></div>
+            <output id="session-selection-mode" class="selection-mode-label">当前：仅处理所选会话</output>
+          </div>
+          <p class="field-note">每一行都是一条真实会话。勾选一条就是单独蒸馏；勾选多条才会合并多条会话。</p>
+          <div class="session-detail-picker-body">
+        <div class="source-catalog-actions" aria-label="本机会话批量操作">
+          <button id="select-all-sessions" type="button" class="secondary compact-button">全选当前会话</button>
+          <button id="clear-selected-sessions" type="button" class="text-button">清空会话选择</button>
+        </div>
+        <div id="session-catalog" class="session-catalog" aria-label="本机自动发现的会话列表"><p class="section-note">正在扫描本地记录……</p></div>
+        <p id="selected-session-summary" class="field-note">系统会显示会话标题、最后目标和最近时间；直接勾选，可同时选择多条。</p>
+          </div>
+        </section>
+
+        <section class="web-chat-intake web-intake-only" aria-labelledby="web-chat-title">
+          <div class="web-chat-heading">
+            <div><span class="eyebrow">主工作台 · 网页端对话</span><h2 id="web-chat-title">读取已登录网页聊天</h2></div>
+            <output id="web-chat-connection" class="web-chat-connection" data-state="checking">正在检查连接</output>
+          </div>
+          <p class="field-note">网页聊天读取只在这个主工作台完成，不会放进生成后的独立 Agent。连接浏览器伴侣后，系统会连续滚动当前平台的会话目录，并尝试展开“查看全部/加载更多”；每条真实会话会先保存到本机持久化列表。打开某条网页对话后，点击“读取当前聊天”会按同一会话编号更新这条记录，补齐完整消息、更新时间和版本信息。本机 Codex 会话始终单独显示。</p>
+          <div id="web-chat-platforms" class="web-chat-platforms" aria-label="选择网页聊天平台">
+            <button type="button" class="web-chat-platform active" data-web-chat-platform="chatgpt"><strong>ChatGPT</strong><small>打开网页</small></button>
+            <button type="button" class="web-chat-platform" data-web-chat-platform="deepseek"><strong>DeepSeek</strong><small>打开网页</small></button>
+            <button type="button" class="web-chat-platform" data-web-chat-platform="gemini"><strong>Gemini</strong><small>打开网页</small></button>
+            <button type="button" class="web-chat-platform" data-web-chat-platform="doubao"><strong>豆包</strong><small>打开网页</small></button>
+          </div>
+          <div class="web-chat-actions">
+            <button id="web-chat-capture" type="button" class="secondary">读取当前聊天</button>
+            <button id="web-chat-history" type="button" class="text-button">读取全部真实会话列表</button>
+            <button id="web-chat-setup" type="button" class="text-button">自动准备浏览器伴侣</button>
+          </div>
+          <p id="web-chat-status" class="web-chat-status">连接浏览器后，可将网页端聊天直接加入本次蒸馏。</p>
+          <section id="web-chat-setup-panel" class="web-chat-setup-panel" aria-labelledby="web-chat-setup-title" hidden>
+            <div class="web-chat-setup-heading"><div><span class="eyebrow">首次只需一次</span><h3 id="web-chat-setup-title">自动准备浏览器伴侣</h3><p>系统会打开伴侣文件夹和当前浏览器的扩展管理页，并持续等待连接。你只需在扩展管理页确认一次“加载已解压的扩展程序”。</p></div><output id="web-chat-setup-state" class="web-chat-setup-state" data-state="idle">尚未准备</output></div>
+            <ol id="web-chat-setup-steps" class="web-chat-setup-steps">
+              <li data-setup-step="folder"><span>1</span><div><strong>打开伴侣文件夹</strong><small>系统自动完成</small></div></li>
+              <li data-setup-step="extensions"><span>2</span><div><strong>打开扩展管理页</strong><small>系统自动完成</small></div></li>
+              <li data-setup-step="confirm"><span>3</span><div><strong>确认加载一次</strong><small>在扩展页点“加载已解压的扩展程序”，选刚打开的文件夹</small></div></li>
+              <li data-setup-step="connected"><span>4</span><div><strong>自动完成配对</strong><small>扩展会自动找到本工作台，不再手填地址和配对码</small></div></li>
+            </ol>
+            <div class="web-chat-setup-actions"><button id="web-chat-setup-start" type="button" class="secondary">开始自动准备</button><button id="web-chat-copy-setup" type="button" class="text-button">复制备用连接信息</button></div>
+            <p id="web-chat-setup-detail" class="web-chat-setup-detail" role="status" aria-live="polite">还没有连接时，点击“开始自动准备”即可打开所需窗口。</p>
+            <div id="web-chat-setup-fallback" class="web-chat-setup-fallback" hidden><span><small>工作台地址</small><code id="web-chat-setup-address">-</code></span><span><small>配对码</small><strong id="web-chat-setup-code">------</strong></span></div>
+          </section>
+          <div id="web-chat-history-list" class="web-chat-history-list" hidden></div>
+          <section class="chatgpt-full-sync" aria-labelledby="chatgpt-full-sync-title">
+            <div class="chatgpt-full-sync-heading">
+              <div><span class="eyebrow">ChatGPT 全量接入</span><h3 id="chatgpt-full-sync-title">持久化历史与网页实时更新</h3><p>官方导出 ZIP 建立完整历史基线；Edge 网页伴侣先保存真实历史目录，再按会话地址更新新增或缺失内容。两类来源分开显示，系统会自动对账。</p></div>
+              <output id="chatgpt-coverage-status" class="chatgpt-coverage-status">正在读取覆盖率……</output>
+            </div>
+            <div class="chatgpt-full-sync-actions">
+              <button id="chatgpt-import-trigger" type="button" class="secondary">选择官方导出 ZIP</button>
+              <input id="chatgpt-export-file" type="file" accept=".zip,application/zip" hidden />
+              <button id="chatgpt-refresh-coverage" type="button" class="text-button">刷新覆盖率</button>
+              <button id="chatgpt-capture-all" type="button" class="primary" disabled>读取全部已发现会话</button>
+              <button id="chatgpt-force-capture-all" type="button" class="text-button" disabled>强制重新读取全部</button>
+              <button id="chatgpt-sync-retry-failed" type="button" class="text-button" hidden>只重试失败会话</button>
+            </div>
+            <div id="chatgpt-coverage-grid" class="chatgpt-coverage-grid" aria-live="polite"></div>
+            <section id="chatgpt-sync-progress" class="chatgpt-sync-progress" aria-labelledby="chatgpt-sync-progress-title" hidden>
+              <div class="chatgpt-sync-progress-heading">
+                <div><span class="eyebrow">实时同步状态</span><h4 id="chatgpt-sync-progress-title">准备读取 ChatGPT 会话</h4></div>
+                <output id="chatgpt-sync-phase" class="chatgpt-sync-phase" data-state="queued">准备中</output>
+              </div>
+              <div class="chatgpt-sync-track" role="progressbar" aria-label="ChatGPT 会话读取进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="chatgpt-sync-track-value"></span></div>
+              <div class="chatgpt-sync-metrics">
+                <span><small>已完成</small><strong id="chatgpt-sync-completed">0</strong></span>
+                <span><small>失败</small><strong id="chatgpt-sync-failed">0</strong></span>
+                <span><small>剩余</small><strong id="chatgpt-sync-remaining">0</strong></span>
+                <span><small>速度</small><strong id="chatgpt-sync-rate">等待计算</strong></span>
+                <span><small>预计剩余</small><strong id="chatgpt-sync-eta">等待计算</strong></span>
+                <span><small>最近保存</small><strong id="chatgpt-sync-checkpoint">尚未保存</strong></span>
+              </div>
+              <p id="chatgpt-sync-current" class="chatgpt-sync-current">正在建立读取计划……</p>
+              <div class="chatgpt-sync-controls">
+                <button id="chatgpt-sync-pause" type="button" class="secondary">暂停读取</button>
+                <button id="chatgpt-sync-resume" type="button" class="secondary" hidden>继续读取</button>
+                <button id="chatgpt-sync-cancel" type="button" class="text-button">取消任务</button>
+              </div>
+            </section>
+            <p id="chatgpt-sync-status" class="chatgpt-sync-status">尚未导入官方导出，也尚未启动网页批量读取。</p>
+          </section>
+          <section id="web-chat-imported-sources" class="web-chat-imported-sources" aria-labelledby="web-chat-imported-title" hidden>
+            <div class="web-chat-imported-heading"><div><span class="eyebrow">网页端已读取</span><h3 id="web-chat-imported-title">网页端会话列表</h3></div><span class="web-chat-list-note">与本机 Codex 分开</span></div>
+            <div class="source-catalog-actions" aria-label="网页端会话批量操作">
+              <button id="select-visible-web-sessions" type="button" class="text-button">勾选当前网页会话</button>
+              <button id="clear-web-session-selection" type="button" class="text-button">清空网页会话选择</button>
+            </div>
+            <div id="web-chat-imported-list" class="web-chat-imported-list" aria-label="网页端已读取的会话列表"></div>
+            <p id="web-chat-imported-summary" class="field-note">网页端会话会独立列出；每条记录都显示真实标题、消息数和首条内容，勾选后仍可与本机 Codex 会话一起蒸馏。</p>
+          </section>
+        </section>
+
+        <section class="source-selection" aria-labelledby="source-selection-title">
+          <div class="source-selection-heading"><div><span class="eyebrow">已选择</span><h2 id="source-selection-title">本次要理解的工作</h2></div><output id="source-selection-count" class="selection-count">0 条</output></div>
+          <p id="source-selection-summary" class="field-note">从上方勾选后，系统会自动合并重复来源并理解它们之间的关系。</p>
+          <div id="source-selection-list" class="source-selection-list"><p class="section-note">尚未选择会话。</p></div>
+        </section>
+        <section id="scope-summary" class="scope-summary" aria-live="polite">
+          <strong id="scope-summary-title">分析范围：仅分析已选会话</strong>
+          <span id="scope-summary-detail">未明确选择项目时，不读取项目文件、Git 或项目知识。</span>
+        </section>
+        <section id="project-context-control" class="project-context-control" aria-labelledby="project-context-title">
+          <div class="project-context-copy">
+            <span class="eyebrow">可选：项目理解</span>
+            <strong id="project-context-title">只在需要时加入项目文件</strong>
+            <p id="project-context-path">当前只使用所选会话。不会扫描电脑中的其他项目或文件夹。</p>
+          </div>
+          <div class="project-context-actions">
+            <button id="enable-project-context" type="button" class="secondary">选择项目文件夹</button>
+            <button id="disable-project-context" type="button" class="text-button" hidden>仅分析会话</button>
+          </div>
+        </section>
+        <section id="project-context-preview" class="project-context-preview" hidden aria-live="polite">
+          <div class="project-context-preview-heading">
+            <div><span class="eyebrow">开始前检查</span><strong>系统准备读取这些项目文件</strong></div>
+            <span id="project-context-preview-status" class="preview-status">等待检查</span>
+          </div>
+          <p id="project-context-preview-summary">选择项目后，系统会先列出相关文件和排除项。</p>
+          <div class="project-context-preview-columns">
+            <div><strong>会纳入</strong><ul id="project-context-preview-selected"></ul></div>
+            <div><strong>会排除</strong><ul id="project-context-preview-excluded"></ul></div>
+          </div>
+        </section>
+        <div class="primary-actions">
+          <button id="analyze" class="primary" disabled>开始智能蒸馏</button>
+          <button id="package" class="secondary package-action" disabled>按推荐生成并打开能力包</button>
+        </div>
+        <p id="primary-action-hint" class="primary-action-hint">先选择至少一条会话，系统会自动启用下一步。</p>
+        <p id="status" class="status">选择一条或多条工作会话即可。项目、文件、Git、产物和验证记录由系统自动发现。</p>
+
+      </aside>
+      <section class="workspace" aria-live="polite">
+        <header id="results-view-heading" class="results-view-heading">
+          <div><span class="eyebrow">结果</span><h1 id="results-view-title" tabindex="-1">蒸馏建议与能力包</h1><p>这里集中显示本次蒸馏建议、P0-P3、完整证据和已经生成的能力包，不混入会话选择或网页连接操作。</p></div>
+          <button id="results-back-to-source" type="button" class="secondary compact-button">返回选择会话</button>
+        </header>
+        <section id="result-overview-strip" class="result-overview-strip" aria-label="结果概览" hidden>
+          <div class="result-overview-item" data-tone="source"><span>当前蒸馏</span><strong id="result-overview-source">等待选择</strong><small id="result-overview-source-detail">选择一条或多条会话后开始。</small></div>
+          <div class="result-overview-item" data-tone="capability"><span>专属能力</span><strong id="result-overview-capabilities">等待分析</strong><small id="result-overview-capabilities-detail">分析后会显示从真实过程提炼出的能力。</small></div>
+          <div class="result-overview-item" data-tone="delivery"><span>已生成能力包</span><strong id="result-overview-packages">0 个</strong><small id="result-overview-packages-detail">可再次打开、下载或运行。</small></div>
+          <div class="result-overview-action"><div><span>下一步</span><strong id="result-overview-next">选择会话开始蒸馏</strong></div><button id="result-overview-primary" type="button" class="primary compact-button">选择会话</button></div>
+        </section>
+        <div id="empty" class="empty-state">
+          <span class="empty-mark">待办</span>
+          <h2 id="results-empty-title">还没有新的蒸馏结果</h2>
+          <p id="results-empty-description">先从左侧选择本机对话或网页端对话，完成蒸馏后，系统建议、P0-P3、证据和能力包会统一显示在这里。</p>
+        </div>
+
+        <section id="recommendation-center" class="recommendation-center" hidden>
+          <header class="recommendation-header">
+            <div><span class="eyebrow">第 2 步 · 系统建议</span><h2 id="recommendation-title">专属蒸馏建议</h2><p id="recommendation-headline"></p></div>
+            <div id="recommendation-links" class="artifact-links"></div>
+          </header>
+          <div id="recommendation-judgements" class="recommendation-judgements"></div>
+          <div id="recommended-package" class="recommended-package"></div>
+          <div class="recommendation-toolbar">
+            <div><strong>系统为何这样排序</strong><span>重要性、执行先后和证据可信度分别判断，不混成一个分数。</span></div>
+            <button id="recommendation-package" class="primary compact-primary" type="button">生成并打开推荐能力包</button>
+          </div>
+          <div id="priority-list" class="priority-list"></div>
+        </section>
+
+        <section id="standalone-reader" class="standalone-reader" hidden>
+          <header class="standalone-reader-heading">
+            <div><span class="eyebrow">可阅读子页面</span><h1 id="standalone-reader-title">正在读取内容</h1><p id="standalone-reader-description">页面会先显示直白说明，再保留可选的原始技术数据。</p></div>
+            <div id="standalone-reader-actions" class="document-actions"></div>
+          </header>
+          <div id="standalone-reader-content" class="package-document-reader"><div class="document-loading">正在读取并整理内容……</div></div>
+        </section>
+
+        <section id="package-result" class="package-result" hidden>
+          <div class="package-header">
+            <div class="package-header-copy">
+              <div class="package-header-kicker">
+                <span class="eyebrow">专属能力控制舱</span>
+                <span id="package-state" class="package-state">正在载入能力包</span>
+              </div>
+              <h2 id="package-title">完整会话能力包</h2>
+              <p id="package-summary" class="result-summary"></p>
+            </div>
+            <div id="package-links" class="artifact-links"></div>
+            <div id="package-glance" class="package-glance" aria-label="能力包关键指标"></div>
+          </div>
+          <div class="package-anchor">
+            <div><span>联合来源范围</span><strong id="package-scope">每条会话均为记录 1 至最后一条</strong></div>
+            <div><span>能力包根目录</span><code id="package-root">-</code></div>
+            <div><span>清单文件</span><code id="package-manifest">-</code></div>
+          </div>
+          <div class="package-workbench">
+            <nav id="package-navigation" class="package-navigation" aria-label="能力包功能">
+              <div class="package-navigation-heading"><strong>能力地图</strong><small>所有内容在当前子界面内切换</small></div>
+              <button type="button" class="active" data-package-view="overview"><span>01</span>总览</button>
+              <button type="button" data-package-view="capability"><span>02</span>专属能力</button>
+              <button type="button" data-package-view="priorities"><span>03</span>P0-P3</button>
+              <button type="button" data-package-view="tasks"><span>04</span>任务目录</button>
+              <button type="button" data-package-view="project"><span>05</span>项目理解</button>
+              <button type="button" data-package-view="evidence"><span>06</span>文件与验证</button>
+              <button type="button" data-package-view="agent"><span>07</span>运行 Agent</button>
+              <button type="button" data-package-view="install"><span>08</span>安装与接口</button>
+              <button type="button" data-package-view="document" hidden><span>09</span>文件阅读</button>
+            </nav>
+            <div class="package-workbench-main">
+              <section class="package-panel" data-package-panel="overview">
+                <header class="package-panel-heading"><div><span class="eyebrow">先看这里</span><h3>这个包解决什么问题</h3></div></header>
+                <section id="package-next-steps" class="package-next-steps"></section>
+                <section id="package-description" class="package-description"></section>
+              </section>
+              <section class="package-panel" data-package-panel="capability" hidden>
+                <header class="package-panel-heading"><div><span class="eyebrow">专属能力</span><h3>能做什么、何时使用、如何执行</h3></div></header>
+                <div id="package-capability-reader" class="package-document-slot"></div>
+                <div id="package-capability-expertise" class="package-capability-expertise"></div>
+              </section>
+              <section class="package-panel" data-package-panel="priorities" hidden>
+                <header class="package-panel-heading"><div><span class="eyebrow">执行顺序</span><h3>P0-P3 优先级计划</h3></div></header>
+                <div id="package-priority-reader" class="package-document-slot"></div>
+              </section>
+              <section class="package-panel" data-package-panel="tasks" hidden>
+                <header class="package-panel-heading"><div><span class="eyebrow">可直接交办</span><h3>任务目录</h3></div></header>
+                <div id="package-task-reader" class="package-document-slot"></div>
+              </section>
+              <section class="package-panel" data-package-panel="project" hidden>
+                <header class="package-panel-heading"><div><span class="eyebrow">项目级理解</span><h3>会话、项目与文件之间的关系</h3></div></header>
+                <div id="package-project-content" class="package-project-content"></div>
+              </section>
+              <section class="package-panel" data-package-panel="evidence" hidden>
+                <header class="package-panel-heading"><div><span class="eyebrow">可追溯证据</span><h3>文件、产物与验证结果</h3></div></header>
+                <div id="package-evidence-content" class="package-evidence-content"></div>
+                <div id="package-verification" class="verification-note"></div>
+              </section>
+              <section class="package-panel package-agent-panel" data-package-panel="agent" hidden>
+                <header class="package-panel-heading"><div><span class="eyebrow">同页运行</span><h3>专属 Agent</h3><p>系统会先检查文件与端口，再启动当前能力包；运行状态、失败原因和界面都留在这里。</p></div></header>
+                <div id="package-agent-status" class="package-agent-status"></div>
+                <div class="package-agent-actions">
+                  <button id="package-agent-start" type="button" class="primary">启动当前能力包 Agent</button>
+                  <button id="package-agent-refresh" type="button" class="secondary">刷新状态</button>
+                  <button id="package-agent-stop" type="button" class="secondary">停止 Agent</button>
+                </div>
+                <div id="package-agent-stage" class="package-agent-stage">
+                  <div class="agent-empty"><strong>Agent 尚未启动</strong><p>点击上方按钮后，操作界面会直接显示在这里。</p></div>
+                </div>
+                <details class="agent-log-panel"><summary>查看启动与运行日志</summary><pre id="package-agent-logs">暂无日志。</pre></details>
+              </section>
+              <section class="package-panel" data-package-panel="install" hidden>
+                <header class="package-panel-heading"><div><span class="eyebrow">交付与复用</span><h3>安装、Skill、MCP 与接口</h3></div></header>
+                <div id="package-delivery" class="delivery-grid"></div>
+              </section>
+              <section class="package-panel" data-package-panel="document" hidden>
+                <header class="package-panel-heading document-heading"><div><span class="eyebrow">同页文件阅读器</span><h3 id="package-document-title">能力包文件</h3><p id="package-document-meta"></p></div><div id="package-document-actions" class="document-actions"></div></header>
+                <div id="package-document-reader" class="package-document-reader"></div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section id="package-library" class="package-library" aria-labelledby="package-library-title">
+          <div class="package-library-heading">
+            <div>
+              <span class="eyebrow">能力包入口</span>
+              <h2 id="package-library-title">已生成的能力包</h2>
+              <p>列表会自动读取全部历史能力包。先看名称、时间和主要交付物，需要时再展开完整能力、阶段、目录和下载入口。</p>
+            </div>
+            <div class="package-library-tools">
+              <output id="package-library-count" aria-live="polite">正在读取</output>
+              <button id="refresh-packages" class="secondary compact-button" type="button">刷新列表</button>
+            </div>
+          </div>
+          <div class="package-library-filterbar" aria-label="筛选能力包">
+            <label class="package-filter-search" for="package-library-search"><span>搜索</span><input id="package-library-search" type="search" placeholder="名称、能力、项目或目录" autocomplete="off" /></label>
+            <label for="package-library-target"><span>交付物</span><select id="package-library-target"><option value="all">全部类型</option><option value="agent">Agent</option><option value="skill">Skill</option><option value="mcp">MCP</option></select></label>
+            <label for="package-library-time"><span>生成时间</span><select id="package-library-time"><option value="all">全部时间</option><option value="7">最近 7 天</option><option value="30">最近 30 天</option><option value="90">最近 90 天</option></select></label>
+            <label for="package-library-sort"><span>排序</span><select id="package-library-sort"><option value="latest">最新生成</option><option value="oldest">最早生成</option><option value="name">按名称</option></select></label>
+            <button id="clear-package-filters" type="button" class="text-button">清除筛选</button>
+          </div>
+          <div id="recent-packages" class="recent-packages"><p class="section-note">正在读取本地能力包……</p></div>
+        </section>
+
+        <div id="result" class="result" hidden>
+          <div class="result-header">
+            <div>
+              <span class="eyebrow">完整会话证据</span>
+              <h2 id="result-title">会话取证报告</h2>
+              <p id="result-summary" class="result-summary"></p>
+              <p id="result-source" class="muted"></p>
+            </div>
+            <div id="artifact-links" class="artifact-links"></div>
+          </div>
+          <div id="metrics" class="metrics"></div>
+          <nav class="tabs" role="tablist" aria-label="会话证据分类">
+            <button class="tab active" data-tab="timeline" role="tab">请求与执行</button>
+            <button class="tab" data-tab="tools" role="tab">工具目录</button>
+            <button class="tab" data-tab="code" role="tab">代码与产物</button>
+            <button class="tab" data-tab="project" role="tab">项目知识</button>
+            <button class="tab" data-tab="triggers" role="tab">触发逻辑</button>
+            <button class="tab" data-tab="skill" role="tab">技能蓝图</button>
+          </nav>
+          <div id="tab-content" class="tab-content"></div>
+        </div>
+      </section>
+    </main>
+    <dialog id="workbench-tools-dialog" class="workbench-tools-dialog" aria-labelledby="workbench-tools-title">
+      <div class="workbench-tools-shell">
+        <header class="workbench-tools-heading">
+          <div><span class="eyebrow">辅助功能</span><h2 id="workbench-tools-title">更多设置与换机</h2><p>这些选项不影响日常的“选择、蒸馏、看结果”主流程，只在需要补充来源或更改交付内容时使用。</p></div>
+          <button id="close-workbench-tools" type="button" class="dialog-close" aria-label="关闭更多设置">×</button>
+        </header>
+        <div class="workbench-tools-grid">
+          <section class="workbench-tools-section" aria-labelledby="source-intake-title">
+            <div class="source-intake-heading"><span class="eyebrow">补充来源</span><h3 id="source-intake-title">找不到会话时</h3></div>
+            <label for="thread-id">补充会话编号（可多条）</label>
+            <textarea id="thread-id" rows="3" spellcheck="false" placeholder="粘贴编号后系统自动查找文件"></textarea>
+            <div class="source-intake-actions"><button id="resolve-thread-ids" type="button" class="secondary compact-button">自动查找</button><button id="clear-thread-ids" type="button" class="text-button">清空</button></div>
+            <label>从本机选择会话文件</label>
+            <div class="path-picker-control">
+              <button id="scan-default-sessions" type="button" class="secondary path-picker-button">重新扫描本机</button>
+              <button id="pick-session-files" type="button" class="secondary path-picker-button">选择会话文件</button>
+              <button id="pick-session-directory" type="button" class="secondary path-picker-button">选择文件夹并扫描</button>
+            </div>
+            <output id="selected-session-files" class="picked-paths">未选择补充会话文件</output>
+          </section>
+          <section class="workbench-tools-section" aria-labelledby="delivery-settings-title">
+            <div class="source-intake-heading"><span class="eyebrow">交付设置</span><h3 id="delivery-settings-title">能力包内容</h3></div>
+            <label for="project-path">项目上下文（可选，默认不读取）</label>
+            <div class="path-picker-control"><input id="project-path" readonly placeholder="由系统自动发现" autocomplete="off" /><button id="pick-project-path" type="button" class="secondary path-picker-button">选择项目文件夹</button></div>
+            <p class="field-note">所有文件路径均通过系统选择窗口指定，不需要手工输入。</p>
+            <section class="scope-lock" aria-label="会话选择范围">
+              <span class="scope-lock-mark">全量</span>
+              <div><strong>每条会话从第一条读到最后一条</strong><p>系统固定来源、哈希和记录数量，保证蒸馏结论可追溯。</p></div>
+            </section>
+            <label for="package-id">包标识（可选）</label>
+            <input id="package-id" inputmode="text" placeholder="留空：系统自动生成" autocomplete="off" />
+            <label for="package-name">包名称（可选）</label>
+            <input id="package-name" inputmode="text" placeholder="留空：根据会话、项目、工具和产物自动命名" autocomplete="off" />
+            <fieldset class="delivery-options">
+              <legend>生成内容</legend>
+              <label class="check"><input id="target-skill" type="checkbox" checked />可安装技能</label>
+              <label class="check"><input id="target-mcp" type="checkbox" checked />服务接口</label>
+              <label class="check"><input id="target-agent" type="checkbox" checked />独立执行型 Agent 与中文 UI</label>
+            </fieldset>
+            <div class="options">
+              <label class="check"><input id="include-evidence" type="checkbox" checked />保留必要证据摘录</label>
+              <label class="check"><input id="redact" type="checkbox" checked />自动隐藏凭据样式文本</label>
+            </div>
+          </section>
+        </div>
+        <section id="portable-workbench" class="portable-workbench" aria-labelledby="portable-workbench-title">
+          <div class="portable-workbench-copy">
+            <span class="eyebrow">换电脑继续使用</span>
+            <h2 id="portable-workbench-title">生成主工作台安装包</h2>
+            <p>把完整的零代码工作能力蒸馏器带到另一台 Windows 电脑。新电脑解压后双击即可启动，无需预装 Node.js；会话、项目和浏览器登录状态会在新电脑本机重新发现和配对。</p>
+          </div>
+          <div class="portable-workbench-facts" aria-label="安装包包含的功能">
+            <div><strong>会话与项目</strong><span>自动发现本机 Codex 会话，支持多选并理解项目文件、Git、产物与验证。</span></div>
+            <div><strong>智能蒸馏</strong><span>生成 P0-P3 建议、证据、Skill、MCP、独立 Agent 和中文界面。</span></div>
+            <div><strong>网页聊天</strong><span>在新电脑的浏览器中重新连接 ChatGPT、DeepSeek、Gemini 或豆包网页对话。</span></div>
+          </div>
+          <div class="portable-workbench-actions">
+            <button id="build-portable-workbench" class="primary" type="button">生成 Windows 换机安装包</button>
+            <p id="portable-workbench-status" class="portable-workbench-status">不包含当前电脑的聊天记录、项目文件、生成结果、Cookie、令牌或模型密钥。</p>
+          </div>
+        </section>
+      </div>
+    </dialog>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

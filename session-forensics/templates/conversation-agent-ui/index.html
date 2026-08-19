@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="可以读取和修改本地文件、执行本地命令的独立人工智能能力包" />
+    <title>本地执行型人工智能工作台</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">智</span>
+        <div><strong>本地执行型人工智能工作台</strong><span id="package-name">正在读取能力包</span></div>
+      </div>
+      <div class="runtime-summary">
+        <span id="runtime-dot" class="runtime-dot"></span>
+        <div><strong id="runtime-label">正在检查模型</strong><span id="runtime-model">尚未读取配置</span></div>
+      </div>
+    </header>
+
+    <section class="capability-banner" aria-labelledby="capability-title">
+      <div class="capability-intro">
+        <span class="section-label">这个能力包实际能做什么</span>
+        <h1 id="capability-title">会提取并改进原对话，也会真正操作本地文件和命令</h1>
+        <p id="capability-summary">人工智能会回查原对话的最新纠正和工具证据，再自动查看工作区、读取或修改文件、执行检查与测试命令，并把每一步操作和结果显示在对话中。</p>
+      </div>
+      <dl class="capability-quickfacts">
+        <div><dt>包名称依据</dt><dd id="package-naming-summary">正在读取</dd></div>
+        <div><dt>核心能力</dt><dd id="capability-speciality-summary">正在读取</dd></div>
+        <div><dt>适用任务</dt><dd id="capability-task-summary">正在读取</dd></div>
+        <div><dt>交付形态</dt><dd id="capability-delivery-summary">正在读取</dd></div>
+        <div><dt>本地执行</dt><dd id="local-tool-summary">读取已开放，写入和命令由你控制</dd></div>
+      </dl>
+    </section>
+
+    <main class="workspace">
+      <aside class="settings-panel" aria-labelledby="settings-title">
+        <div class="panel-title"><span>首次使用按顺序完成</span><h2 id="settings-title">连接与本地权限</h2></div>
+
+        <ol class="setup-progress" aria-label="开始使用进度">
+          <li id="setup-step-config" data-state="current"><span>1</span><div><strong>连接模型</strong><small id="setup-config-state">等待填写</small></div></li>
+          <li id="setup-step-workspace" data-state="pending"><span>2</span><div><strong>选择工作区</strong><small id="setup-workspace-state">等待选择</small></div></li>
+          <li id="setup-step-tools" data-state="pending"><span>3</span><div><strong>开启本地工具</strong><small id="setup-tools-state">默认只读</small></div></li>
+          <li id="setup-step-chat" data-state="pending"><span>4</span><div><strong>开始任务</strong><small id="setup-chat-state">配置后可用</small></div></li>
+        </ol>
+
+        <form id="config-form">
+          <h3 class="form-heading">一、模型连接</h3>
+          <fieldset class="connection-choice">
+            <legend>模型在哪里运行？</legend>
+            <div class="segmented-control" role="group" aria-label="模型连接方式">
+              <button type="button" data-connection-kind="cloud" aria-pressed="true">在线模型</button>
+              <button type="button" data-connection-kind="local" aria-pressed="false">本地模型</button>
+            </div>
+            <p id="connection-kind-note" class="field-note">在线模型通常需要服务地址和 API 密钥。</p>
+          </fieldset>
+
+          <label for="base-url">模型接口地址</label>
+          <input id="base-url" type="url" required placeholder="https://服务地址/v1" autocomplete="off" aria-describedby="base-url-note" />
+          <p id="base-url-note" class="field-note">填写 OpenAI 兼容接口地址，通常以 <code>/v1</code> 结尾。</p>
+
+          <label for="model">模型名称</label>
+          <div class="field-action">
+            <input id="model" placeholder="可先获取模型再选择" autocomplete="off" aria-describedby="model-note" />
+            <button id="load-models" type="button" class="compact-button">获取全部模型</button>
+          </div>
+          <p id="model-note" class="field-note">不知道名称时，保存接口后会自动读取；也可以点击“获取全部模型”。</p>
+          <select id="model-list" hidden aria-label="获取到的模型"></select>
+          <section class="model-catalog" aria-labelledby="model-catalog-title">
+            <div class="model-catalog-heading">
+              <div><h4 id="model-catalog-title">接口模型全量列表</h4><p>完整显示接口实际返回的所有模型。搜索只筛选显示，点击模型即可填入模型名称。</p></div>
+              <strong id="model-catalog-count">尚未读取</strong>
+            </div>
+            <label class="model-filter-label" for="model-filter">搜索已读取的模型</label>
+            <input id="model-filter" type="search" placeholder="输入模型名称筛选" autocomplete="off" disabled />
+            <p id="model-catalog-state" class="model-catalog-state" role="status" aria-live="polite">保存接口设置后会自动读取；也可以点击“获取全部模型”。</p>
+            <div id="model-catalog" class="model-catalog-list" aria-live="polite"><p class="muted">尚未读取接口模型。</p></div>
+          </section>
+
+          <label for="api-key">API 密钥 <span class="label-optional">本地模型通常可留空</span></label>
+          <input id="api-key" type="password" placeholder="粘贴模型服务提供的密钥" autocomplete="new-password" aria-describedby="api-key-note" />
+          <p id="api-key-note" class="field-note">密钥只保存在当前服务内存中，不写入能力包，也不会传给本地命令。</p>
+
+          <details class="advanced-settings">
+            <summary>模型高级设置</summary>
+            <label for="timeout-seconds">最长等待时间（秒）</label>
+            <input id="timeout-seconds" type="number" min="1" max="300" step="1" value="60" />
+            <div class="minor-actions">
+              <button id="clear-key" type="button" class="text-button">清除本次密钥</button>
+              <button id="reset-config" type="button" class="text-button">恢复启动配置</button>
+            </div>
+          </details>
+
+          <div class="button-stack">
+            <button id="save-config" type="submit" class="primary-button">保存并检查连接</button>
+            <button id="test-connection" type="button" class="secondary-button">重新检查</button>
+          </div>
+          <p id="config-status" class="inline-status" data-state="info" role="status" aria-live="polite" tabindex="-1">填写完成后，点击“保存并检查连接”。</p>
+        </form>
+
+        <form id="workspace-form" class="workspace-settings">
+          <h3 class="form-heading">二、本地工作区与权限</h3>
+          <p class="plain-explanation">工作区就是允许人工智能查看和操作的项目文件夹。文件工具始终限制在这个文件夹内。</p>
+
+          <label for="workspace-root">本地工作区文件夹</label>
+          <input id="workspace-root" type="text" required placeholder="例如：C:\项目\我的应用" autocomplete="off" />
+          <p class="field-note">必须填写已经存在的文件夹。保存后，人工智能默认可以浏览目录和读取文本文件。</p>
+
+          <fieldset class="permission-options">
+            <legend>允许哪些本地操作？</legend>
+            <label class="permission-option" for="workspace-write-enabled">
+              <input id="workspace-write-enabled" type="checkbox" />
+              <span><strong>允许创建和修改文件</strong><small>可新建目录、写入文件、精确替换文本。范围限制在上面的工作区。</small></span>
+            </label>
+            <label class="permission-option danger-option" for="command-enabled">
+              <input id="command-enabled" type="checkbox" />
+              <span><strong>允许自动执行本地命令</strong><small>可运行 PowerShell、构建、测试和检查命令。命令使用当前 Windows 账户权限。</small></span>
+            </label>
+          </fieldset>
+
+          <div class="workspace-grid">
+            <div><label for="command-timeout-seconds">单条命令超时（秒）</label><input id="command-timeout-seconds" type="number" min="1" max="120" value="30" /></div>
+            <div><label for="max-agent-steps">最多自动步骤</label><input id="max-agent-steps" type="number" min="1" max="30" value="12" /></div>
+          </div>
+
+          <div class="permission-warning"><strong>开启命令前请看清：</strong>命令虽然从工作区启动，但命令本身可使用绝对路径或调用系统程序。只对你信任的任务开启，并查看对话里的工具执行记录。</div>
+          <div class="button-stack">
+            <button id="save-workspace" type="submit" class="primary-button">保存工作区与权限</button>
+            <button id="reset-workspace" type="button" class="secondary-button">恢复启动设置</button>
+          </div>
+          <p id="workspace-status" class="inline-status" data-state="info" role="status" aria-live="polite">默认只允许浏览和读取；写文件和命令需要你主动勾选。</p>
+        </form>
+
+        <section class="package-anchor" aria-labelledby="anchor-title">
+          <h2 id="anchor-title">能力来源</h2>
+          <dl>
+            <div><dt>会话编号</dt><dd id="session-id">-</dd></div>
+            <div><dt>完整记录</dt><dd id="record-count">-</dd></div>
+            <div><dt>来源校验</dt><dd id="source-hash">-</dd></div>
+          </dl>
+        </section>
+      </aside>
+
+      <section class="chat-panel" aria-labelledby="chat-title">
+        <div class="chat-toolbar">
+          <div><span class="section-label">真实模型 + 本地工具自动循环</span><h2 id="chat-title">人工智能执行区</h2></div>
+          <button id="clear-chat" type="button" class="compact-button">清空对话</button>
+        </div>
+
+        <div id="mode-selector" class="mode-selector" role="group" aria-label="工作模式">
+          <button type="button" data-mode="执行本地任务" class="active" aria-pressed="true">执行本地任务</button>
+          <button type="button" data-mode="分析问题" aria-pressed="false">分析问题</button>
+          <button type="button" data-mode="生成结果" aria-pressed="false">生成结果</button>
+          <button type="button" data-mode="检查内容" aria-pressed="false">检查内容</button>
+          <button type="button" data-mode="提取并改进原对话" aria-pressed="false">提取并改进原对话</button>
+        </div>
+
+        <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions text"></div>
+
+        <section id="chat-error" class="chat-error" role="alert" hidden>
+          <strong>这次任务没有完成</strong>
+          <p id="chat-error-message"></p>
+          <div><button id="retry-chat" type="button" class="secondary-button">再次尝试</button><button id="review-connection" type="button" class="text-button">检查配置</button></div>
+        </section>
+
+        <form id="chat-form" class="composer">
+          <label for="prompt">直接说明要完成的本地任务</label>
+          <div id="prompt-examples" class="prompt-examples" aria-label="任务示例">
+            <button type="button" data-mode="执行本地任务" data-prompt="先查看当前工作区，找到项目入口和测试命令，修复明显问题，然后运行测试验证。">检查项目并修复</button>
+            <button type="button" data-mode="执行本地任务" data-prompt="在当前工作区新建一个说明文件，写清项目用途、启动命令和常见问题，然后检查文件内容。">创建项目说明</button>
+            <button type="button" data-mode="分析问题" data-prompt="查看当前工作区的目录和关键文件，说明项目结构、主要功能和风险。">分析本地项目</button>
+            <button type="button" data-mode="提取并改进原对话" data-prompt="先检索原对话中与当前目标相关的用户要求、后续纠正、工具结果和文件变更，说明旧方案哪里不足，再按改进后的流程执行并验证。">回查原对话并改进</button>
+          </div>
+          <textarea id="prompt" required placeholder="例如：查看项目，修复测试失败，并运行测试确认" aria-describedby="chat-status"></textarea>
+          <div class="composer-footer">
+            <span id="chat-status">完成模型和工作区配置后即可开始。</span>
+            <div class="composer-actions"><button id="stop-chat" type="button" class="secondary-button" hidden>停止执行</button><button id="send-chat" type="submit" class="primary-button" disabled>开始执行</button></div>
+          </div>
+        </form>
+      </section>
+
+      <aside class="context-panel">
+        <div class="context-tabs" role="tablist" aria-label="能力包信息">
+          <button id="capability-tab" type="button" class="active" data-tab="capability" role="tab" aria-selected="true" aria-controls="capability-panel">能力说明</button>
+          <button id="distillation-tab" type="button" data-tab="distillation" role="tab" aria-selected="false" aria-controls="distillation-panel">原对话提炼</button>
+          <button id="workflow-tab" type="button" data-tab="workflow" role="tab" aria-selected="false" aria-controls="workflow-panel">执行工作流</button>
+          <button id="guide-tab" type="button" data-tab="guide" role="tab" aria-selected="false" aria-controls="guide-panel">操作说明</button>
+        </div>
+
+        <section id="capability-panel" class="context-content" role="tabpanel" aria-labelledby="capability-tab">
+          <h2>它能直接完成什么</h2>
+          <p id="capability-panel-summary" class="muted"></p>
+          <ul id="ui-capability-list" class="capability-list"></ul>
+          <h3>本地执行能力</h3>
+          <ul class="capability-list static-capabilities">
+            <li><strong>浏览与读取</strong><span>列出工作区目录，按行读取 UTF-8 文本文件。</span></li>
+            <li><strong>创建与修改</strong><span>获得写入权限后，可创建目录、写文件和精确替换文本。</span></li>
+            <li><strong>自动执行命令</strong><span>获得命令权限后，可运行 PowerShell、构建、测试与验证命令。</span></li>
+            <li><strong>检索原对话证据</strong><span>按关键词查找原用户消息、助手回应、工具结果、命令和文件变更。</span></li>
+            <li><strong>按最新纠正改进</strong><span>后续用户纠正覆盖早期弱要求，同时保留已有工具结果证明有效的做法。</span></li>
+            <li><strong>连续自主执行</strong><span>模型会根据每一步结果继续调用工具，直到完成任务或达到步骤上限。</span></li>
+            <li><strong>全过程可见</strong><span>界面显示工具名称、参数、执行状态、耗时和结果，不把未执行的操作说成已完成。</span></li>
+          </ul>
+          <h3>包名称依据</h3><p id="package-naming-detail" class="context-note">正在读取会话主题、实际工具和实现文件证据。</p>
+          <h3>从原会话提炼的专长</h3><div id="speciality-list" class="speciality-list"></div>
+          <h3>适合交给它的任务</h3><ul id="suitable-tasks" class="suitable-tasks"></ul>
+          <h3>需要你提供</h3><ul id="required-inputs"></ul>
+          <h3>你会获得</h3><ul id="capability-outputs"></ul>
+          <h3>明确的能力边界</h3><ul id="capability-limits" class="limit-list"></ul>
+          <div class="artifact-links"><a href="/api/artifact?name=packageGuide" target="_blank" rel="noreferrer">打开完整能力说明</a></div>
+        </section>
+
+        <section id="distillation-panel" class="context-content" role="tabpanel" aria-labelledby="distillation-tab" hidden>
+          <h2>原对话怎样被提取和改进</h2>
+          <p id="distillation-purpose" class="muted">正在读取原对话提炼结果。</p>
+          <dl id="distillation-summary" class="distillation-summary"></dl>
+          <h3>需求怎样演进</h3><ol id="requirement-evolution" class="evolution-list"></ol>
+          <h3>用户明确纠正</h3><div id="conversation-corrections" class="evidence-list"></div>
+          <h3>应该保留的有效做法</h3><ul id="retained-strengths"></ul>
+          <h3>旧方案暴露的不足</h3><ul id="conversation-weaknesses" class="warning-list"></ul>
+          <h3>改进后执行流程</h3><ol id="improved-workflow" class="improved-workflow"></ol>
+          <h3>必须满足的验收标准</h3><ul id="distillation-acceptance"></ul>
+          <h3>失败时怎样处理</h3><ul id="recovery-rules"></ul>
+          <div class="artifact-links"><a href="/api/artifact?name=conversationExtraction" target="_blank" rel="noreferrer">打开完整原对话提取文件</a></div>
+        </section>
+
+        <section id="workflow-panel" class="context-content" role="tabpanel" aria-labelledby="workflow-tab" hidden>
+          <h2 id="workflow-name">正在读取工作流</h2><p id="workflow-description" class="muted"></p>
+          <h3>执行步骤</h3><ol id="workflow-steps" class="workflow-steps"></ol>
+          <h3>预期产物</h3><ul id="expected-outputs"></ul>
+          <h3>验收要求</h3><ul id="verification-list"></ul>
+        </section>
+
+        <section id="guide-panel" class="context-content" role="tabpanel" aria-labelledby="guide-tab" hidden>
+          <h2>四步开始</h2>
+          <ol class="guide-steps">
+            <li><strong>连接模型</strong><span>填写 OpenAI 兼容地址、模型名和需要的密钥，保存并检查连接。</span></li>
+            <li><strong>选择工作区</strong><span>填写一个已经存在的项目文件夹；所有文件工具都限制在该文件夹内。</span></li>
+            <li><strong>按需开启权限</strong><span>只分析时保持只读；需要改文件时开写入；需要构建测试时再开命令。</span></li>
+            <li><strong>直接交代任务</strong><span>人工智能会查看文件、执行工具、根据结果继续处理，并把轨迹显示出来。</span></li>
+          </ol>
+          <h3>页面功能直白说明</h3>
+          <dl class="function-list">
+            <div><dt>获取模型</dt><dd>读取当前模型服务提供的模型名称。</dd></div>
+            <div><dt>保存并检查连接</dt><dd>只在当前服务内存中保存模型配置，并真实连接模型服务检查。</dd></div>
+            <div><dt>保存工作区与权限</dt><dd>指定人工智能可以操作的文件夹，并单独控制文件写入和命令执行。</dd></div>
+            <div><dt>执行本地任务</dt><dd>让模型自动决定要读取、修改哪些文件，以及要运行哪些命令。</dd></div>
+            <div><dt>提取并改进原对话</dt><dd>让模型先检索原会话要求、纠正和工具证据，再补强旧方案并按新标准验证。</dd></div>
+            <div><dt>原对话提炼</dt><dd>直接查看需求演进、用户纠正、旧方案不足、保留做法、改进流程和验收要求。</dd></div>
+            <div><dt>工具执行记录</dt><dd>每次本地操作都会显示名称、参数、状态、耗时和返回结果。</dd></div>
+            <div><dt>停止执行</dt><dd>中断当前模型请求或正在执行的本地命令。</dd></div>
+            <div><dt>复制与下载</dt><dd>复制单条最终结果，或下载为 Markdown 文件。</dd></div>
+            <div><dt>清空对话</dt><dd>清除当前页面对话记录，开始一个新任务。</dd></div>
+          </dl>
+          <div class="artifact-links">
+            <a href="/api/artifact?name=packageGuide" target="_blank" rel="noreferrer">完整能力说明</a>
+            <a href="/api/artifact?name=readme" target="_blank" rel="noreferrer">独立智能体使用说明</a>
+            <a href="/api/artifact?name=aiProfile" target="_blank" rel="noreferrer">人工智能配置</a>
+            <a href="/api/artifact?name=conversationExtraction" target="_blank" rel="noreferrer">完整原对话提取</a>
+            <a href="/api/artifact?name=envExample" target="_blank" rel="noreferrer">环境配置示例</a>
+            <a href="/api/artifact?name=manifest" target="_blank" rel="noreferrer">能力包清单</a>
+          </div>
+        </section>
+      </aside>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
