@@ -13,7 +13,7 @@ const instructionFiles = new Set(['AGENTS.md', 'README.md', 'CONTRIBUTING.md', '
 const managedProcesses = new Map();
 
 async function terminateProcessTree(child) {
-  if (!child || child.killed) return;
+  if (!child || child.exitCode !== null || child.signalCode !== null) return;
   if (process.platform === 'win32' && child.pid) {
     await new Promise((resolve) => {
       const killer = spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
@@ -21,7 +21,30 @@ async function terminateProcessTree(child) {
       killer.once('close', () => { clearTimeout(timer); resolve(); });
       killer.once('error', () => { clearTimeout(timer); resolve(); });
     });
-  } else child.kill('SIGTERM');
+    return;
+  }
+
+  let signalledGroup = false;
+  if (child.pid) {
+    try {
+      process.kill(-child.pid, 'SIGTERM');
+      signalledGroup = true;
+    } catch {}
+  }
+  if (!signalledGroup) {
+    try { child.kill('SIGTERM'); } catch { return; }
+  }
+
+  await Promise.race([
+    new Promise((resolve) => child.once('close', resolve)),
+    new Promise((resolve) => setTimeout(resolve, 1000)),
+  ]);
+  if (child.pid) {
+    try { process.kill(-child.pid, 'SIGKILL'); } catch {}
+  }
+  if (child.exitCode === null && child.signalCode === null) {
+    try { child.kill('SIGKILL'); } catch {}
+  }
 }
 
 async function rootRealPath() {
@@ -512,6 +535,7 @@ async function runCommand(command, signal, timeoutMs) {
       cwd: workspaceConfig.root,
       env: filteredCommandEnvironment(),
       shell: true,
+      detached: process.platform !== 'win32',
       windowsHide: true,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
@@ -536,7 +560,7 @@ async function runCommand(command, signal, timeoutMs) {
 async function runProgram(program, args, signal, timeoutMs) {
   return new Promise((resolve, reject) => {
     const startedAt = Date.now();
-    const child = spawn(program, args, { cwd: workspaceConfig.root, env: filteredCommandEnvironment(), shell: false, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(program, args, { cwd: workspaceConfig.root, env: filteredCommandEnvironment(), shell: false, detached: process.platform !== 'win32', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = ''; let stderr = ''; let timedOut = false;
     const append = (current, chunk) => cleanText(current + chunk.toString('utf8'), 120000);
     child.stdout.on('data', (chunk) => { stdout = append(stdout, chunk); });
@@ -597,7 +621,7 @@ async function startProcess(run, args = {}) {
   const command = String(args.command || '').trim();
   if (!command) throw new HttpError(400, 'command_required', 'start_process 必须提供 command。');
   if ([...managedProcesses.values()].filter((item) => item.status === '运行中').length >= 12) throw new HttpError(429, 'process_limit', '同时运行的受管理进程已达到 12 个，请先停止不需要的进程。');
-  const child = spawn(command, { cwd: workspaceConfig.root, env: filteredCommandEnvironment(), shell: true, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
+  const child = spawn(command, { cwd: workspaceConfig.root, env: filteredCommandEnvironment(), shell: true, detached: process.platform !== 'win32', windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
   const item = { id: createId('process'), child, command, taskId: run?.id || null, status: '运行中', startedAt: new Date().toISOString(), endedAt: null, exitCode: null, signal: null, stdout: '', stderr: '' };
   managedProcesses.set(item.id, item);
   child.stdout.on('data', (chunk) => appendProcessOutput(item, 'stdout', chunk));
