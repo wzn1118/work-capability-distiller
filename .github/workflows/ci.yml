@@ -17,7 +17,11 @@ jobs:
   verify:
     name: Build, service, and distiller tests (Ubuntu / Node 22)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # The evidence distiller integration suite performs real filesystem,
+    # package, Agent, and replay workflows. Ubuntu hosted storage can take
+    # more than 20 minutes even though the same 85 tests finish locally in
+    # about 10 minutes, so leave enough room for a deterministic serial run.
+    timeout-minutes: 45
 
     steps:
       - name: Check out source
