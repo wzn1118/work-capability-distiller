@@ -70,6 +70,6 @@ jobs:
           } else {
             gh release create "$env:GITHUB_REF_NAME" $files `
               --verify-tag `
-              --title "零代码工作能力蒸馏器 $env:GITHUB_REF_NAME" `
+              --title "aftercode $env:GITHUB_REF_NAME" `
               --generate-notes
           }

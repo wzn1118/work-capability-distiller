@@ -159,7 +159,7 @@ const url = 'http://127.0.0.1:' + port + '/';
 try {
   await waitUntilReady(url, child);
   console.log('');
-  console.log('零代码工作能力蒸馏器已启动：' + url);
+  console.log('aftercode 已启动：' + url);
   console.log('关闭此窗口会停止工作台。');
   openBrowser(url);
 } catch (error) {
@@ -177,7 +177,7 @@ try {
 function directStartScript() {
   return `@echo off\r
 chcp 65001 >nul\r
-title 零代码工作能力蒸馏器\r
+title aftercode\r
 cd /d "%~dp0"\r
 "%~dp0runtime\\node.exe" "%~dp0portable-launcher.mjs"\r
 if errorlevel 1 (\r
@@ -191,7 +191,7 @@ if errorlevel 1 (\r
 function selfCheckScript() {
   return `@echo off\r
 chcp 65001 >nul\r
-title 零代码工作能力蒸馏器 - 安装包自检\r
+title aftercode - 安装包自检\r
 cd /d "%~dp0"\r
 "%~dp0runtime\\node.exe" "%~dp0portable-self-check.mjs"\r
 if errorlevel 1 pause\r
@@ -201,7 +201,7 @@ if errorlevel 1 pause\r
 function uninstallScript() {
   return `@echo off\r
 chcp 65001 >nul\r
-title 卸载零代码工作能力蒸馏器\r
+title 卸载 aftercode\r
 echo 将删除当前安装目录，不会删除用户另行保存的能力包 ZIP。\r
 choice /M "确认卸载"\r
 if errorlevel 2 exit /b 0\r
@@ -218,7 +218,10 @@ import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const target = process.env.WORKBENCH_INSTALL_ROOT || path.join(process.env.LOCALAPPDATA || process.env.USERPROFILE || ROOT, 'WorkCapabilityDistiller');
+const localRoot = process.env.LOCALAPPDATA || process.env.USERPROFILE || ROOT;
+const preferredTarget = path.join(localRoot, 'aftercode');
+const legacyTarget = path.join(localRoot, 'WorkCapabilityDistiller');
+const target = process.env.WORKBENCH_INSTALL_ROOT || (await exists(preferredTarget) ? preferredTarget : await exists(legacyTarget) ? legacyTarget : preferredTarget);
 const staging = target + '.next';
 const backup = target + '.previous';
 
@@ -287,11 +290,15 @@ function installScript() {
   return `@echo off\r
 chcp 65001 >nul\r
 setlocal EnableExtensions\r
-title 安装或升级零代码工作能力蒸馏器\r
+title 安装或升级 aftercode\r
 if /I "%~1"=="--automated-test" set "WORKBENCH_SKIP_START=1"\r
 if /I "%~1"=="--automated-test" set "WORKBENCH_SKIP_SHORTCUTS=1"\r
-if "%WORKBENCH_INSTALL_ROOT%"=="" (set "TARGET=%LOCALAPPDATA%\\WorkCapabilityDistiller") else (set "TARGET=%WORKBENCH_INSTALL_ROOT%")\r
-set "STARTMENU=%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\零代码工作能力蒸馏器"\r
+if "%WORKBENCH_INSTALL_ROOT%"=="" (\r
+  set "TARGET=%LOCALAPPDATA%\\aftercode"\r
+  if not exist "%LOCALAPPDATA%\\aftercode" if exist "%LOCALAPPDATA%\\WorkCapabilityDistiller" set "TARGET=%LOCALAPPDATA%\\WorkCapabilityDistiller"\r
+) else (set "TARGET=%WORKBENCH_INSTALL_ROOT%")\r
+set "WORKBENCH_INSTALL_ROOT=%TARGET%"\r
+set "STARTMENU=%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\aftercode"\r
 echo [1/5] 正在检查安装包完整性...\r
 "%~dp0runtime\\node.exe" "%~dp0portable-self-check.mjs"\r
 if errorlevel 1 (echo 安装包检查失败。& pause& exit /b 1)\r
@@ -306,12 +313,13 @@ if not "%WORKBENCH_SKIP_SHORTCUTS%"=="1" (\r
   copy /y "%TARGET%\\修复安装.cmd" "%STARTMENU%\\修复安装.cmd" >nul\r
   copy /y "%TARGET%\\回滚上一版本.cmd" "%STARTMENU%\\回滚上一版本.cmd" >nul\r
   copy /y "%TARGET%\\uninstall.cmd" "%STARTMENU%\\卸载.cmd" >nul\r
-  powershell -NoProfile -ExecutionPolicy Bypass -Command "$ws=New-Object -ComObject WScript.Shell; $s=$ws.CreateShortcut([Environment]::GetFolderPath('Desktop')+'\\零代码工作能力蒸馏器.lnk'); $s.TargetPath='%TARGET%\\start-workbench.cmd'; $s.WorkingDirectory='%TARGET%'; $s.Save()"\r
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "$desktop=[Environment]::GetFolderPath('Desktop'); Remove-Item -LiteralPath ($desktop+'\\零代码工作能力蒸馏器.lnk') -Force -ErrorAction SilentlyContinue; $ws=New-Object -ComObject WScript.Shell; $s=$ws.CreateShortcut($desktop+'\\aftercode.lnk'); $s.TargetPath='%TARGET%\\start-workbench.cmd'; $s.WorkingDirectory='%TARGET%'; $s.Save()"\r
+  if exist "%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\零代码工作能力蒸馏器" rmdir /s /q "%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\零代码工作能力蒸馏器"\r
 )\r
 echo [4/5] 安装状态已保存。\r
 if "%WORKBENCH_SKIP_START%"=="1" (echo 已完成安装验证，未启动工作台。& endlocal& exit /b 0)\r
 echo [5/5] 正在启动主工作台...\r
-start "零代码工作能力蒸馏器" "%TARGET%\\start-workbench.cmd"\r
+start "aftercode" "%TARGET%\\start-workbench.cmd"\r
 echo 安装完成。\r
 endlocal\r
 `;
@@ -321,7 +329,7 @@ function repairScript() {
   return `@echo off\r
 chcp 65001 >nul\r
 setlocal\r
-title 修复零代码工作能力蒸馏器\r
+title 修复 aftercode\r
 cd /d "%~dp0"\r
 echo 正在检查当前安装...\r
 "%~dp0runtime\\node.exe" "%~dp0portable-self-check.mjs"\r
@@ -331,7 +339,7 @@ if errorlevel 1 (\r
   exit /b 1\r
 )\r
 echo 当前安装完整，正在重新创建桌面入口...\r
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$ws=New-Object -ComObject WScript.Shell; $s=$ws.CreateShortcut([Environment]::GetFolderPath('Desktop')+'\\零代码工作能力蒸馏器.lnk'); $s.TargetPath='%~dp0start-workbench.cmd'; $s.WorkingDirectory='%~dp0'; $s.Save()"\r
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$desktop=[Environment]::GetFolderPath('Desktop'); Remove-Item -LiteralPath ($desktop+'\\零代码工作能力蒸馏器.lnk') -Force -ErrorAction SilentlyContinue; $ws=New-Object -ComObject WScript.Shell; $s=$ws.CreateShortcut($desktop+'\\aftercode.lnk'); $s.TargetPath='%~dp0start-workbench.cmd'; $s.WorkingDirectory='%~dp0'; $s.Save()"\r
 echo 修复完成。\r
 endlocal\r
 `;
@@ -341,7 +349,7 @@ function rollbackScript() {
   return `@echo off\r
 chcp 65001 >nul\r
 setlocal\r
-title 回滚零代码工作能力蒸馏器上一版本\r
+title 回滚 aftercode 上一版本\r
 set "TARGET=%~dp0"\r
 set "TARGET=%TARGET:~0,-1%"\r
 set "BACKUP=%TARGET%.previous"\r
@@ -354,7 +362,7 @@ move "%TARGET%" "%FAILED%" >nul\r
 move "%BACKUP%" "%TARGET%" >nul\r
 if not exist "%TARGET%\\runtime\\node.exe" (echo 回滚失败，请检查目录是否被正在运行的工作台占用。& pause& exit /b 1)\r
 echo 已回滚到上一版本，失败版本保留在：%FAILED%\r
-start "零代码工作能力蒸馏器" "%TARGET%\\start-workbench.cmd"\r
+start "aftercode" "%TARGET%\\start-workbench.cmd"\r
 endlocal\r
 `;
 }
@@ -369,7 +377,7 @@ function usageHtml(metadata) {
   const createdAt = new Date(metadata.createdAt).toLocaleString('zh-CN', { hour12: false });
   return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>换机安装说明</title><style>
 :root{font-family:"Microsoft YaHei UI","Segoe UI",sans-serif;color:#173a34;background:#f3f7f5}body{margin:0}.shell{max-width:980px;margin:auto;padding:40px 24px 64px}.eyebrow{color:#087f70;font-weight:800;font-size:13px}h1{font-size:36px;margin:8px 0 12px}h2{font-size:22px;margin:0 0 12px}p,li{line-height:1.8}.lead{font-size:17px;color:#49635d}.steps,.grid{display:grid;gap:12px}.steps{grid-template-columns:repeat(3,1fr);margin:28px 0}.card{background:#fff;border:1px solid #cddbd6;border-radius:6px;padding:20px}.step{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#087f70;color:#fff;font-weight:800}.grid{grid-template-columns:1fr 1fr}.notice{border-left:4px solid #c94040;background:#fff;padding:16px 18px;margin-top:20px}code{background:#e8f1ed;padding:2px 5px;border-radius:3px}@media(max-width:720px){h1{font-size:28px}.steps,.grid{grid-template-columns:1fr}}</style></head><body><main class="shell">
-<span class="eyebrow">换电脑继续使用</span><h1>零代码工作能力蒸馏器</h1>
+<span class="eyebrow">换电脑继续使用</span><h1>aftercode</h1>
 <p class="lead">这是包含内置运行环境的 Windows x64 换机安装包。新电脑无需预装 Node.js 或 Git，双击安装后即可自动打开主工作台。</p>
 <section class="steps"><div class="card"><span class="step">1</span><h2>复制并解压</h2><p>把 ZIP 完整复制到新电脑并解压到普通文件夹。</p></div><div class="card"><span class="step">2</span><h2>双击安装</h2><p>运行 <strong>安装并启动.cmd</strong>。程序会检查文件、复制到当前用户目录并创建桌面入口。</p></div><div class="card"><span class="step">3</span><h2>开始使用</h2><p>浏览器会自动打开主工作台。选择新电脑上的会话或连接网页聊天即可。</p></div></section>
 <section class="grid"><div class="card"><h2>包内已有功能</h2><ul><li>自动发现本机 Codex 会话并显示标题</li><li>多选会话、按内容搜索并识别项目</li><li>读取项目文件、Git、产物和验证证据</li><li>生成 P0-P3 建议、Skill、MCP 和独立 Agent</li><li>连接网页聊天并更新本机持久化列表</li></ul></div><div class="card"><h2>换机后需要重新连接</h2><ul><li>会话列表来自新电脑本机，不复制旧电脑聊天记录</li><li>项目文件需要在新电脑存在或重新选择</li><li>网页聊天使用新电脑的浏览器登录状态</li><li>已有能力包可单独复制 ZIP 后在工作台导入</li></ul></div></section>
@@ -415,14 +423,14 @@ function runProcess(command, args, options = {}) {
 
 async function buildSetupExecutable({ zipPath, outputPath }) {
   if (process.platform !== 'win32' || !await pathExists('C:\\Windows\\System32\\iexpress.exe')) return null;
-  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'work-capability-setup-'));
+  const staging = await fsp.mkdtemp(path.join(os.tmpdir(), 'aftercode-setup-'));
   const stagedZip = path.join(staging, 'payload.zip');
   const stagedBootstrap = path.join(staging, 'bootstrap.cmd');
   const stagedSed = path.join(staging, 'package.sed');
   const stagedSetup = path.join(staging, 'setup.exe');
-  const bootstrap = `@echo off\r\nsetlocal\r\nset "DEST=%TEMP%\\WorkCapabilityDistillerSetup-%RANDOM%"\r\nmkdir "%DEST%" >nul 2>nul\r\ntar.exe -xf "%~dp0payload.zip" -C "%DEST%"\r\nif errorlevel 1 (echo 安装包解压失败。& pause& exit /b 1)\r\nfor /d %%D in ("%DEST%\\work-capability-distiller-*") do set "PAYLOAD=%%~fD"\r\nif not defined PAYLOAD (echo 找不到安装内容。& pause& exit /b 1)\r\ncall "%PAYLOAD%\\安装并启动.cmd"\r\nendlocal\r\n`;
+  const bootstrap = `@echo off\r\nsetlocal\r\nset "DEST=%TEMP%\\aftercode-setup-%RANDOM%"\r\nmkdir "%DEST%" >nul 2>nul\r\ntar.exe -xf "%~dp0payload.zip" -C "%DEST%"\r\nif errorlevel 1 (echo 安装包解压失败。& pause& exit /b 1)\r\nfor /d %%D in ("%DEST%\\aftercode-*") do set "PAYLOAD=%%~fD"\r\nif not defined PAYLOAD (echo 找不到安装内容。& pause& exit /b 1)\r\ncall "%PAYLOAD%\\安装并启动.cmd"\r\nendlocal\r\n`;
   const winPath = (value) => value.replaceAll('/', '\\');
-  const sed = `[Version]\nClass=IEXPRESS\nSEDVersion=3\n[Options]\nPackagePurpose=InstallApp\nShowInstallProgramWindow=1\nHideExtractAnimation=1\nUseLongFileName=1\nInsideCompressed=1\nRebootMode=N\nTargetName=${winPath(stagedSetup)}\nFriendlyName=WorkCapabilityDistiller\nAppLaunched=bootstrap.cmd\nPostInstallCmd=<None>\nSourceFiles=SourceFiles\n[SourceFiles]\nSourceFiles0=${winPath(staging)}\n[SourceFiles0]\n%FILE0%=\n%FILE1%=\n[Strings]\nFILE0="payload.zip"\nFILE1="bootstrap.cmd"\n`;
+  const sed = `[Version]\nClass=IEXPRESS\nSEDVersion=3\n[Options]\nPackagePurpose=InstallApp\nShowInstallProgramWindow=1\nHideExtractAnimation=1\nUseLongFileName=1\nInsideCompressed=1\nRebootMode=N\nTargetName=${winPath(stagedSetup)}\nFriendlyName=aftercode\nAppLaunched=bootstrap.cmd\nPostInstallCmd=<None>\nSourceFiles=SourceFiles\n[SourceFiles]\nSourceFiles0=${winPath(staging)}\n[SourceFiles0]\n%FILE0%=\n%FILE1%=\n[Strings]\nFILE0="payload.zip"\nFILE1="bootstrap.cmd"\n`;
   try {
     await fsp.copyFile(zipPath, stagedZip);
     await fsp.writeFile(stagedBootstrap, bootstrap, 'utf8');
@@ -442,7 +450,7 @@ export async function buildPortableWorkbench({ outputRoot = PORTABLE_WORKBENCH_O
   if (process.platform !== 'win32' || process.arch !== 'x64') throw new Error('当前换机安装包面向 Windows x64，请在 Windows x64 工作台中生成。');
   const workspacePackage = JSON.parse(await fsp.readFile(path.join(WORKSPACE_ROOT, 'package.json'), 'utf8'));
   const createdAt = now.toISOString();
-  const packageKey = `work-capability-distiller-windows-x64-${timestampKey(now)}`;
+  const packageKey = `aftercode-windows-x64-${timestampKey(now)}`;
   const resolvedOutputRoot = path.resolve(outputRoot);
   const packageDir = path.join(resolvedOutputRoot, packageKey);
   const zipPath = path.join(resolvedOutputRoot, `${packageKey}.zip`);
@@ -460,7 +468,7 @@ export async function buildPortableWorkbench({ outputRoot = PORTABLE_WORKBENCH_O
 
   const metadata = {
     schemaVersion: 2,
-    productName: '零代码工作能力蒸馏器',
+    productName: 'aftercode',
     productVersion: workspacePackage.version,
     packageKey,
     createdAt,

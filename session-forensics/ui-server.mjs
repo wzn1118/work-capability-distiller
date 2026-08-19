@@ -2105,7 +2105,7 @@ async function stopStoredPackageAgent(packageReference) {
 function openApiDocument() {
   return {
     openapi: '3.1.0',
-    info: { title: '零代码工作能力蒸馏器 API', version: '2.0.0', description: '会话选择、项目理解、P0-P3 建议、证据查看、优先级调整和专属能力包生成接口。' },
+    info: { title: 'aftercode API', version: '2.0.0', description: '会话选择、项目理解、P0-P3 建议、证据查看、优先级调整和专属能力包生成接口。' },
     servers: [{ url: `http://${HOST}:${PORT}`, description: '本机蒸馏器' }],
     paths: {
       '/api/v2/workspaces': { get: { summary: '完整扫描并按工作区归组本机 Codex 会话' } },
@@ -2168,7 +2168,7 @@ function safeArtifactPath(outputKey, artifact) {
 }
 
 function portableWorkbenchArchivePath(packageKey) {
-  if (!/^work-capability-distiller-windows-x64-\d{14}$/.test(packageKey)) {
+  if (!/^(?:aftercode|work-capability-distiller)-windows-x64-\d{14}$/.test(packageKey)) {
     throw new Error('换机安装包标识不符合格式。');
   }
   const root = path.resolve(PORTABLE_WORKBENCH_OUTPUT_ROOT);

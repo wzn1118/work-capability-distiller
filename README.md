@@ -1,4 +1,4 @@
-# 零代码工作能力蒸馏器
+# aftercode
 
 [![CI](https://github.com/wzn1118/work-capability-distiller/actions/workflows/ci.yml/badge.svg)](https://github.com/wzn1118/work-capability-distiller/actions/workflows/ci.yml)
 [![Node.js 22](https://img.shields.io/badge/Node.js-22-2f7d32)](https://nodejs.org/)
@@ -8,7 +8,7 @@
 
 聊天记录里经常藏着最值钱的部分：用户最后一次纠正、真正跑通的命令、被改过的文件、失败后换掉的方案、最终交付物，以及那句很朴素的“这次终于对了”。
 
-零代码工作能力蒸馏器会把这些散落的信息重新拼起来。它读取一条或多条工作会话，按需理解相关项目和文件，连接工具调用、Git 差异、生成产物与验证结果，再把成功路径编译成可以安装和执行的能力包。
+aftercode 会把这些散落的信息重新拼起来。它读取一条或多条工作会话，按需理解相关项目和文件，连接工具调用、Git 差异、生成产物与验证结果，再把成功路径编译成可以安装和执行的能力包。
 
 能力包可以包含：
 
@@ -40,6 +40,12 @@
 - 想把多段会话组合成一项可复用能力；
 - 想让另一台 Windows 电脑直接安装并继续使用。
 
+## 下一站：数字员工
+
+项目下一阶段会把已经蒸馏出的能力注册成可长期工作的数字员工。每个员工都有明确岗位、能力版本、任务收件箱、分级权限、审批流程、分层记忆、运行记录和考核指标；用户可以查看它正在做什么、为什么这样做、改了什么、结果是否通过验证，以及遇到问题后怎样接管或恢复。
+
+完整的能力短板、目标架构、Employee IR、任务状态机、权限与审批、记忆、连接器、API、实施阶段和验收矩阵见：[数字员工全量升级方案](docs/数字员工全量升级方案.md)。
+
 ## 立即使用
 
 ### Windows 一键安装
@@ -66,7 +72,7 @@
 默认安装目录：
 
 ```text
-%LOCALAPPDATA%\WorkCapabilityDistiller
+%LOCALAPPDATA%\aftercode
 ```
 
 默认只监听本机 `127.0.0.1`。启动器会在 `8960-8999` 中自动寻找空闲端口，不需要用户研究端口号。
@@ -467,9 +473,9 @@ POST /api/v2/chatgpt/edge/resume
 每次 Windows 构建会生成：
 
 ```text
-work-capability-distiller-windows-x64-<时间>-setup.exe
-work-capability-distiller-windows-x64-<时间>.zip
-work-capability-distiller-windows-x64-<时间>-manifest.json
+aftercode-windows-x64-<时间>-setup.exe
+aftercode-windows-x64-<时间>.zip
+aftercode-windows-x64-<时间>-manifest.json
 ```
 
 `manifest.json` 记录文件名、字节数和 SHA-256。GitHub Actions 的 Windows 作业会真实执行安装、二次升级、产物保留、自检、ZIP 解压和工作台健康检查；上传前还会逐个重新计算文件大小与 SHA-256，确认清单、安装器和 ZIP 彼此对得上，随后才上传上述三个文件。
@@ -477,7 +483,7 @@ work-capability-distiller-windows-x64-<时间>-manifest.json
 正式 Release 还会为三个文件生成 GitHub 构建来源证明。SHA-256 像包裹封条，来源证明则像带签章的发货单：它会把文件摘要和构建它的仓库、提交及工作流绑定起来。安装 GitHub CLI 后可验证下载文件：
 
 ```powershell
-gh attestation verify ".\work-capability-distiller-*-setup.exe" --repo wzn1118/work-capability-distiller
+gh attestation verify ".\aftercode-*-setup.exe" --repo wzn1118/work-capability-distiller
 ```
 
 稳定版放在 [GitHub Releases](https://github.com/wzn1118/work-capability-distiller/releases)。每次提交的最新构建可以在 [Actions](https://github.com/wzn1118/work-capability-distiller/actions/workflows/ci.yml) 对应运行中下载。

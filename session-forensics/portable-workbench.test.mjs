@@ -63,6 +63,7 @@ test('Windows 换机安装包可解压、自检并启动完整主工作台', asy
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'workbench-portable-'));
   t.after(() => fs.rm(tempRoot, { recursive: true, force: true }));
   const result = await buildPortableWorkbench({ outputRoot: path.join(tempRoot, 'build'), now: new Date('2026-08-17T01:02:03.000Z') });
+  assert.match(result.packageKey, /^aftercode-windows-x64-/);
 
   for (const relativePath of [
     'runtime/node.exe', 'session-forensics/ui-server.mjs', 'session-forensics/ui/index.html',
@@ -84,6 +85,7 @@ test('Windows 换机安装包可解压、自检并启动完整主工作台', asy
   const metadata = JSON.parse(await fs.readFile(path.join(result.packageDir, 'version.json'), 'utf8'));
   const workspacePackage = JSON.parse(await fs.readFile(path.resolve('package.json'), 'utf8'));
   assert.equal(metadata.schemaVersion, 2);
+  assert.equal(metadata.productName, 'aftercode');
   assert.equal(metadata.productVersion, workspacePackage.version);
   assert.equal(metadata.dataPolicy.includesBrowserAuthentication, false);
   assert.equal(metadata.dataPolicy.includesApiKeys, false);
@@ -102,6 +104,9 @@ test('Windows 换机安装包可解压、自检并启动完整主工作台', asy
   assert.match(installer, /正在复制并检查新版本/);
   assert.match(installer, /创建开始菜单和桌面入口/);
   assert.match(installer, /start-workbench\.cmd/);
+  assert.match(installer, /%LOCALAPPDATA%\\aftercode/);
+  assert.match(installer, /%LOCALAPPDATA%\\WorkCapabilityDistiller/);
+  assert.match(installer, /aftercode\.lnk/);
   assert.match(selfCheck, /安装包自检通过/);
   assert.match(guide, /换电脑继续使用/);
   assert.match(guide, /不包含旧电脑的聊天记录/);
@@ -162,7 +167,8 @@ test('Windows 换机安装包可解压、自检并启动完整主工作台', asy
   assert.equal(runState.port, port);
   assert.equal(Number.isInteger(runState.childPid), true);
   const homepage = await fetch(`http://127.0.0.1:${port}/`).then((response) => response.text());
-  assert.match(homepage, /零代码工作能力蒸馏器/);
+  assert.match(homepage, /aftercode/);
+  assert.match(guide, /<h1>aftercode<\/h1>/);
   launcher.kill();
   await new Promise((resolve) => launcher.once('exit', resolve));
   const statePath = path.join(portableRoot, 'run-state.json');

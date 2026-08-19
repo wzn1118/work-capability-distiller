@@ -4981,7 +4981,7 @@ function App() {
   return (
     <div className="agent-app">
       <aside className={`rail ${mobileNav ? 'open' : ''}`}>
-        <div className="wordmark"><span>K</span><strong>KOLFORGE</strong><small>AGENT OS</small><button onClick={() => setMobileNav(false)} aria-label="关闭导航"><X size={18} /></button></div>
+        <div className="wordmark"><span>A</span><strong>aftercode</strong><small>AGENT OS</small><button onClick={() => setMobileNav(false)} aria-label="关闭导航"><X size={18} /></button></div>
         <div className="project-meta"><div className="project-dot">{(brief.brand || 'K').slice(0, 1).toUpperCase()}</div><div><strong>{brief.brand || '未命名项目'}</strong><span>{brief.product || '创建本次营销任务'}</span></div><ChevronDown size={15} /></div>
         <div className="module-switcher" aria-label="工作模块">
           <button type="button" className="module-switch active"><Users size={14} /><span><small>KOL WORKFLOW</small><strong>KOL 采集</strong></span></button>
@@ -5123,7 +5123,7 @@ function ContentCaptureModule({ onBack, notify, toast, connectors, connectionRet
   return (
     <div className="agent-app content-capture-app">
       <aside className={`rail ${mobileNav ? 'open' : ''}`}>
-        <div className="wordmark"><span>K</span><strong>KOLFORGE</strong><small>AGENT OS</small><button onClick={() => setMobileNav(false)} aria-label="关闭导航"><X size={18} /></button></div>
+        <div className="wordmark"><span>A</span><strong>aftercode</strong><small>AGENT OS</small><button onClick={() => setMobileNav(false)} aria-label="关闭导航"><X size={18} /></button></div>
         <div className="module-context"><small>STANDALONE MODULE</small><strong>内容采集</strong><span>直接抓取公开内容，不进入 KOL 候选池</span></div>
         <div className="module-switcher" aria-label="工作模块">
           <button type="button" className="module-switch" onClick={onBack}><Users size={14} /><span><small>KOL WORKFLOW</small><strong>KOL 采集</strong></span><ArrowRight size={13} /></button>
@@ -7534,7 +7534,7 @@ function EntityPageShell({ eyebrow, title, subtitle, creator, backHref, actions,
   return <div className="entity-page">
     <header className="entity-page-topbar">
       <a className="entity-page-back" href={backHref}><ArrowLeft size={16} />返回工作台</a>
-      <div className="entity-page-brand"><span>K</span><div><strong>KOLFORGE</strong><small>DETAIL PAGE</small></div></div>
+      <div className="entity-page-brand"><span>A</span><div><strong>aftercode</strong><small>DETAIL PAGE</small></div></div>
     </header>
     <main className="entity-page-main">
       <div className="entity-page-crumb"><span>{eyebrow}</span>{creator && <div><ChannelTag platform={creator.platform || creator.channel} /><small>{creator.name || '任务快照'}</small></div>}</div>

@@ -4,7 +4,7 @@
 
 让用户把安装包复制到另一台 Windows x64 电脑后，只完成一个动作：双击安装器。安装器负责准备运行环境、安装主工作台、创建入口、启动服务并打开浏览器；用户随后只需要选择新电脑上的会话、项目和网页聊天连接。
 
-交付对象是“零代码工作能力蒸馏器”本体，包含：
+交付对象是 aftercode 本体，包含：
 
 - 主蒸馏台与三视图导航；
 - 本机 Codex 会话发现、搜索和多选；
@@ -18,10 +18,10 @@
 
 ### 新电脑首次安装
 
-1. 下载 `work-capability-distiller-windows-x64-setup.exe`，或下载 ZIP 备用包。
+1. 下载 `aftercode-windows-x64-setup.exe`，或下载 ZIP 备用包。
 2. 双击单文件安装器。
 3. 安装器解压临时载荷并运行包内自检。
-4. 安装到 `%LOCALAPPDATA%\\WorkCapabilityDistiller`。
+4. 新安装默认进入 `%LOCALAPPDATA%\\aftercode`；检测到旧版 `%LOCALAPPDATA%\\WorkCapabilityDistiller` 时原地升级。
 5. 创建开始菜单、桌面和维护入口。
 6. 启动本地服务并打开 `127.0.0.1` 工作台。
 7. 工作台自动发现当前电脑可用的 Codex 会话。
@@ -39,7 +39,7 @@ ZIP 包适合没有管理员权限、企业安全策略限制单文件安装器�
 ## 包体结构
 
 ```text
-work-capability-distiller-windows-x64-<版本>/
+aftercode-windows-x64-<版本>/
   runtime/
     node.exe                         内置 Node.js 运行时
     *.dll                            Windows 运行依赖

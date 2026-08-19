@@ -14,15 +14,15 @@ test('发布物校验器拒绝错误哈希，并接受完整清单', async (t) =
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   const exe = Buffer.from('setup');
   const zip = Buffer.from('zip');
-  await fs.writeFile(path.join(root, 'work-capability-distiller-windows-x64-test-setup.exe'), exe);
-  await fs.writeFile(path.join(root, 'work-capability-distiller-windows-x64-test.zip'), zip);
-  const manifestPath = path.join(root, 'work-capability-distiller-windows-x64-test-manifest.json');
+  await fs.writeFile(path.join(root, 'aftercode-windows-x64-test-setup.exe'), exe);
+  await fs.writeFile(path.join(root, 'aftercode-windows-x64-test.zip'), zip);
+  const manifestPath = path.join(root, 'aftercode-windows-x64-test-manifest.json');
   await fs.writeFile(manifestPath, JSON.stringify({
     schemaVersion: 1,
-    packageKey: 'work-capability-distiller-windows-x64-test',
+    packageKey: 'aftercode-windows-x64-test',
     files: [
-      { name: 'work-capability-distiller-windows-x64-test-setup.exe', bytes: exe.length, sha256: sha256(exe) },
-      { name: 'work-capability-distiller-windows-x64-test.zip', bytes: zip.length, sha256: sha256(zip) },
+      { name: 'aftercode-windows-x64-test-setup.exe', bytes: exe.length, sha256: sha256(exe) },
+      { name: 'aftercode-windows-x64-test.zip', bytes: zip.length, sha256: sha256(zip) },
     ],
   }));
 

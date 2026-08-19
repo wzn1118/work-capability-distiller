@@ -80,7 +80,7 @@ jobs:
       - name: Upload Windows installer, ZIP, and checksums
         uses: actions/upload-artifact@v7
         with:
-          name: work-capability-distiller-windows-x64-${{ github.sha }}
+          name: aftercode-windows-x64-${{ github.sha }}
           path: |
             output/main-workbench-distributions/*-setup.exe
             output/main-workbench-distributions/*.zip
